@@ -21,7 +21,7 @@ REM ========================================
 REM 1. Compilation LOADKSDS (utilitaire)
 REM ========================================
 echo [1/2] Compilation LOADKSDS (chargement KSDS)...
-cobc -x -free -I %COPYPATH% %COBOLPATH%\LOADKSDS.cbl -o %OUTPATH%\LOADKSDS.exe
+cobc -x -I %COPYPATH% %COBOLPATH%\LOADKSDS.cbl -o %OUTPATH%\LOADKSDS.exe
 if errorlevel 1 (
     echo ERREUR: Echec compilation LOADKSDS
     pause
@@ -34,7 +34,7 @@ REM 2. Compilation MAJASSU + PGMVSAM + PGMERR
 REM    (tout ensemble pour que les CALL fonctionnent)
 REM ========================================
 echo [2/2] Compilation MAJASSU (avec PGMVSAM + PGMERR)...
-cobc -x -free -I %COPYPATH% %COBOLPATH%\MAJASSU.cbl %COBOLPATH%\PGMVSAM.cbl %COBOLPATH%\PGMERR.cbl -o %OUTPATH%\MAJASSU.exe
+cobc -x -I %COPYPATH% %COBOLPATH%\MAJASSU.cbl %COBOLPATH%\PGMVSAM.cbl %COBOLPATH%\PGMERR.cbl -o %OUTPATH%\MAJASSU.exe
 if errorlevel 1 (
     echo ERREUR: Echec compilation MAJASSU
     pause

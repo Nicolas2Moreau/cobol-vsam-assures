@@ -17,7 +17,7 @@
 
       * Fichier ESDS - Mouvements (accès séquentiel uniquement)
            SELECT F-MVTS ASSIGN TO "WORK/MVTS.dat"
-               ORGANIZATION IS SEQUENTIAL
+               ORGANIZATION IS LINE SEQUENTIAL
                ACCESS MODE IS SEQUENTIAL
                FILE STATUS IS FS-MVTS.
 

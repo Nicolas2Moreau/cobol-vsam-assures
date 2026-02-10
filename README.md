@@ -8,6 +8,12 @@
 
 ---
 
+> **🪟 TESTS WINDOWS avec GNUCobol ?**
+> **➡️ Consultez [`windows-test/README.md`](windows-test/README.md)** pour l'environnement de simulation complet !
+> *(Disponible sur branche `gnucobol`)*
+
+---
+
 ## 📋 Sommaire
 
 - [Présentation du Projet](#-présentation-du-projet)

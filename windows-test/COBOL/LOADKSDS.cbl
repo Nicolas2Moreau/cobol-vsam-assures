@@ -8,9 +8,9 @@
        INPUT-OUTPUT SECTION.
        FILE-CONTROL.
 
-      * Fichier source (sequentiel)
+      * Fichier source (sequentiel avec retours ligne)
            SELECT F-SOURCE ASSIGN TO "DATA/ASSURES"
-               ORGANIZATION IS SEQUENTIAL
+               ORGANIZATION IS LINE SEQUENTIAL
                FILE STATUS IS FS-SOURCE.
 
       * Fichier KSDS destination (indexed)
