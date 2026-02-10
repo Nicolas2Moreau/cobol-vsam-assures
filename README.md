@@ -93,13 +93,22 @@ Le système est composé de **3 programmes COBOL** fonctionnant de manière modu
 
 Les structures de données sont définies dans des copybooks réutilisables :
 
-| Copybook | Description |
-|----------|-------------|
-| **WASSURE.cpy** | Structure Working Storage pour les assurés (80 octets) |
-| **WFMVTSE.cpy** | Structure Working Storage pour les mouvements (80 octets) |
-| **CASSURES.cpy** | Structure FD pour le fichier KSDS assurés |
-| **CFMVTS.cpy** | Structure FD pour le fichier ESDS mouvements |
-| **MESSAGES.cpy** | Table des 30 messages d'erreur (60 caractères chacun) |
+| Copybook | Description | Statut |
+|----------|-------------|--------|
+| **WASSURE.cpy** | Structure Working Storage pour les assurés (80 octets) | ✅ Utilisé (MAJASSU) |
+| **WFMVTSE.cpy** | Structure Working Storage pour les mouvements (80 octets) | ✅ Utilisé (MAJASSU) |
+| **CASSURES.cpy** | Structure FD pour le fichier KSDS assurés | 📚 Référence technique |
+| **CFMVTS.cpy** | Structure FD pour le fichier ESDS mouvements | 📚 Référence technique |
+| **MESSAGES.cpy** | Table des 30 messages d'erreur (60 caractères chacun) | ✅ Utilisé (PGMERR) |
+
+> **Note :** Les copybooks CASSURES et CFMVTS sont conservés comme documentation de référence de la structure physique des fichiers VSAM. Ils ne sont pas utilisés dans les programmes car PGMVSAM a été conçu comme un accesseur générique (manipule des blocs de 80 octets) pour rester indépendant de la logique métier. Cette séparation permet la réutilisabilité et facilite la maintenance.
+
+### Choix d'Architecture
+
+**Séparation logique métier / accès technique :**
+- **PGMVSAM** manipule des données génériques (`PIC X(80)`) sans connaître leur structure
+- **MAJASSU** interprète les données via WASSURE/WFMVTSE (structures métier)
+- Les codes fonction/retour sont définis dans les deux programmes (duplication normale en COBOL : le sous-programme définit ses codes, l'appelant les réplique pour l'invocation)
 
 ---
 
