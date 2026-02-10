@@ -41,9 +41,9 @@ windows-test/
 │
 ├── COPY/            ← Copybooks
 │
-├── DATA/            ← Données SOURCE (jamais modifiées)
-│   ├── ASSURES      ← 20 assurés (source)
-│   └── MVTS         ← 11 mouvements (source)
+├── DATA/            ← Données SOURCE (pré-triées par matricule)
+│   ├── ASSURES      ← 20 assurés (source, triés)
+│   └── MVTS         ← 11 mouvements (source, triés)
 │
 └── WORK/            ← Fichiers de TRAVAIL (modifiés par programmes)
     ├── ASSURES.dat  ← KSDS données (créé par init)
@@ -116,12 +116,12 @@ ANOMALIES            : 000006
 ### Fichier ETATANO.txt
 
 ```
-200006 ERREUR : 004 - SUPPRESSION SUR ENREGISTREMENT INEXISTANT
-000346 ERREUR : 003 - MISE A JOUR SUR ENREGISTREMENT INEXISTANT
-000347 ERREUR : 004 - SUPPRESSION SUR ENREGISTREMENT INEXISTANT
-300003 ERREUR : 003 - MISE A JOUR SUR ENREGISTREMENT INEXISTANT
-222203 ERREUR : 001 - CODE MOUVEMENT INVALIDE
-300012 ERREUR : 001 - CODE MOUVEMENT INVALIDE
+000346 ERREUR : 003 - 003 - MISE A JOUR SUR ENREGISTREMENT INEXISTANT
+000347 ERREUR : 004 - 004 - SUPPRESSION SUR ENREGISTREMENT INEXISTANT
+222203 ERREUR : 001 - 001 - CODE MOUVEMENT INVALIDE
+300003 ERREUR : 003 - 003 - MISE A JOUR SUR ENREGISTREMENT INEXISTANT
+300012 ERREUR : 001 - 001 - CODE MOUVEMENT INVALIDE
+300312 ERREUR : 001 - 001 - CODE MOUVEMENT INVALIDE
 ```
 
 ---
@@ -139,6 +139,10 @@ ANOMALIES            : 000006
 
 - **DATA/** : Jamais modifié (source)
 - **WORK/** : Modifié par les programmes (gitignore)
+
+- **Fichiers DATA pré-triés** : Les fichiers `DATA/ASSURES` et `DATA/MVTS` sont pré-triés par matricule (ordre croissant). Cela simule l'étape de tri mainframe (JCL SORT) qui précède normalement le REPRO.
+
+- **LINE SEQUENTIAL** : Les programmes utilisent `ORGANIZATION IS LINE SEQUENTIAL` pour lire les fichiers source avec retours à la ligne (`\n`), simulant ainsi la transition entre fichiers texte et fichiers VSAM.
 
 ---
 

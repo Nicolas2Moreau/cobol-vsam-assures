@@ -28,12 +28,17 @@
 ```
 windows-test/
 ├── README.md           (ce fichier)
+├── QUICKSTART.md       (guide de démarrage rapide)
+├── ADAPTATIONS.md      (modifications appliquées)
 ├── compile.bat         (compilation des programmes)
+├── init.bat            (initialisation données)
 ├── run.bat             (exécution MAJASSU)
-├── COBOL/              (programmes COBOL adaptés pour GNUCobol)
-├── COPY/               (copybooks - symlink ou copie depuis ../COPY)
-├── DATA/               (fichiers de données de test)
-└── logs/               (logs d'exécution - ignoré par git)
+├── reset.bat           (remise à zéro)
+├── COBOL/              (programmes COBOL adaptés)
+├── COPY/               (copybooks)
+├── DATA/               (données source - pré-triées par matricule)
+├── WORK/               (fichiers de travail - ignoré par git)
+└── bin/                (exécutables - ignoré par git)
 ```
 
 ---
@@ -81,15 +86,24 @@ Lance le traitement de mise à jour des assurés.
 
 ### 3. Vérification des résultats
 
-- **Logs :** `logs/execution.log`
-- **Anomalies :** `DATA/ETATANO.txt`
+- **Anomalies :** `WORK/ETATANO.txt`
 - **Statistiques :** Affichées dans la console
+- **Fichiers générés :** `WORK/ASSURES.dat` (KSDS modifié)
 
 ---
 
-## 📝 Notes
+## 📝 Notes Importantes
 
-- Les programmes peuvent nécessiter des adaptations syntaxiques
+### ⚠️ Fichiers DATA Pré-Triés
+
+**Pour les besoins des tests GNUCobol**, les fichiers `DATA/ASSURES` et `DATA/MVTS` ont été **pré-triés par matricule** (ordre croissant). Cette étape simule le tri mainframe qui serait normalement effectué par JCL avant le REPRO.
+
+- Sur mainframe : Tri via `SORT` dans le JCL
+- Sur Windows : Fichiers déjà triés dans le dépôt
+
+### Autres Notes
+
+- Les programmes ont été adaptés pour GNUCobol (voir `ADAPTATIONS.md`)
 - Les performances ne sont pas représentatives du mainframe
 - Cet environnement est uniquement pour le développement/tests locaux
 - Ne pas merger cette branche dans `main` (mainframe pur)
