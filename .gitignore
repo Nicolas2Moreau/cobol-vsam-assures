@@ -1,0 +1,14 @@
+# Dossier de configuration Claude Code
+.claude/
+
+# Documentation (ne pas versionner)
+DOCS/
+
+# Fichiers Windows
+Thumbs.db
+desktop.ini
+
+# Fichiers temporaires
+*.tmp
+*.bak
+*~
