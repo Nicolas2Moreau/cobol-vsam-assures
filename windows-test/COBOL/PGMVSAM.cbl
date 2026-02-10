@@ -9,14 +9,14 @@
        FILE-CONTROL.
 
       * Fichier KSDS - Assurés (accès direct et séquentiel)
-           SELECT F-ASSURES ASSIGN TO ASSURES
+           SELECT F-ASSURES ASSIGN TO "WORK/ASSURES.dat"
                ORGANIZATION IS INDEXED
                ACCESS MODE IS DYNAMIC
                RECORD KEY IS FS-ASSURES-KEY
                FILE STATUS IS FS-ASSURES.
 
       * Fichier ESDS - Mouvements (accès séquentiel uniquement)
-           SELECT F-MVTS ASSIGN TO AS-MVTS
+           SELECT F-MVTS ASSIGN TO "WORK/MVTS.dat"
                ORGANIZATION IS SEQUENTIAL
                ACCESS MODE IS SEQUENTIAL
                FILE STATUS IS FS-MVTS.
@@ -287,6 +287,8 @@
                WHEN '10'
                    MOVE WS-RETOUR-EOF TO LS-CODE-RETOUR
                WHEN '23'
+                   MOVE WS-RETOUR-NOTFOUND TO LS-CODE-RETOUR
+               WHEN '24'
                    MOVE WS-RETOUR-NOTFOUND TO LS-CODE-RETOUR
                WHEN '22'
                    MOVE WS-RETOUR-DUPLICATE TO LS-CODE-RETOUR

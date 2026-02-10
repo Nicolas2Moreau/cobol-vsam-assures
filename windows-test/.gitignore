@@ -6,9 +6,8 @@ logs/
 bin/
 *.exe
 
-# Fichiers de donnees generes
-*.dat
-*.idx
+# Fichiers de travail (WORK - generes par les programmes)
+WORK/
 
 # Fichiers temporaires
 *.tmp

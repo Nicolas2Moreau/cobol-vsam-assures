@@ -9,7 +9,7 @@
        FILE-CONTROL.
 
       * Fichier anomalies (gestion directe)
-           SELECT F-ETAT-ANO ASSIGN TO ETATANO
+           SELECT F-ETAT-ANO ASSIGN TO "WORK/ETATANO.txt"
                ORGANIZATION IS SEQUENTIAL
                FILE STATUS IS FS-ANO.
 
