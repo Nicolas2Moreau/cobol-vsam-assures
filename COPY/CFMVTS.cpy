@@ -1,7 +1,11 @@
-      *---------------DEFINITION DU FICHIER FMVTSE----------------
       *----------------------------------------------------------*
-      *    DESCRIPTION DE L'ENREGISTREMENT DU FICHIER MOUVEMENT  *
-      *     (FICHIER VSAM ESDS: LONG ENGT = 80                   *
+      * CFMVTS.cpy - STRUCTURE FICHIER VSAM ESDS FMVTSE         *
+      * (FICHIER VSAM ESDS: LONG ENGT = 80)                     *
+      *                                                          *
+      * NOTE : Copybook de reference non utilise actuellement.  *
+      *        Conserve pour documentation de la structure      *
+      *        physique du fichier VSAM.                        *
+      *        Les programmes utilisent WFMVTSE.cpy (WS).       *
       *----------------------------------------------------------*
       *--------------------------------------------- MATRICULE
            02 MAT-MVT            PIC X(6).
@@ -24,6 +28,6 @@
       *--------------------------------------------- TAUX BONUS/MALUS
            02 TAUX-MVT           PIC 99.
       *--------------------------------------------- RESTE ENGT
-           02                    PIC X(9).
+           02 FILLER             PIC X(9).
       *
       *----------------  FIN DE DESCRIPTION MOUVEMENT ------------*

@@ -1,7 +1,11 @@
       *----------------------------------------------------------*
-      *    DESCRIPTION DE L'ENREGISTREMENT DU FICHIER ASSURE3    *
-      *     (FICHIER VSAM KSDS: LONG ENGT = 80  (LONG CLE = 6)   *
-      *                                         (POSITION = 1)   *
+      * CASSURES.cpy - STRUCTURE FICHIER VSAM KSDS ASSURES3     *
+      * (FICHIER VSAM KSDS: LONG ENGT = 80 / LONG CLE = 6)      *
+      *                                                          *
+      * NOTE : Copybook de reference non utilise actuellement.  *
+      *        Conserve pour documentation de la structure      *
+      *        physique du fichier VSAM.                        *
+      *        Les programmes utilisent WASSURE.cpy (WS).       *
       *----------------------------------------------------------*
       *--------------------------------------------- MATRICULE
            02 MAT-A4             PIC 9(6).
@@ -25,6 +29,6 @@
       *--------------------------------------------- TAUX BONUS/MALUS
            02 TAUX-A4            PIC 99.
       *--------------------------------------------- RESTE ENGT
-           02                    PIC X(9).
+           02 FILLER             PIC X(9).
       *
       *----------------  FIN DE DESCRIPTION ASSURE4 --------------*
