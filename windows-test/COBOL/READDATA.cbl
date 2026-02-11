@@ -45,19 +45,28 @@
       * Decomposition enregistrement assure (pour affichage)
        01  WS-ASSURE.
            05 WS-MATR              PIC 9(6).
-           05 WS-NOM               PIC X(20).
-           05 WS-PRENOM            PIC X(15).
-           05 WS-ADRESSE           PIC X(30).
-           05 WS-RESTE             PIC X(9).
+           05 WS-NOM-PRE           PIC X(20).
+           05 WS-RUE               PIC X(18).
+           05 WS-CP                PIC 9(5).
+           05 WS-VILLE             PIC X(12).
+           05 WS-CODE              PIC X(1).
+           05 WS-PRIME             PIC 9(4)V99.
+           05 WS-BM                PIC X.
+           05 WS-TAUX              PIC 99.
+           05 WS-FILLER            PIC X(9).
 
       * Decomposition enregistrement mouvement (pour affichage)
        01  WS-MVT.
            05 WS-MVT-MATR          PIC 9(6).
-           05 WS-MVT-CODE          PIC X.
-           05 WS-MVT-NOM           PIC X(20).
-           05 WS-MVT-PRENOM        PIC X(15).
-           05 WS-MVT-ADRESSE       PIC X(30).
-           05 WS-MVT-RESTE         PIC X(8).
+           05 WS-MVT-NOM-PRE       PIC X(20).
+           05 WS-MVT-RUE           PIC X(18).
+           05 WS-MVT-CP            PIC 9(5).
+           05 WS-MVT-VILLE         PIC X(12).
+           05 WS-MVT-CODE          PIC X(1).
+           05 WS-MVT-PRIME         PIC 9(4)V99.
+           05 WS-MVT-BM            PIC X.
+           05 WS-MVT-TAUX          PIC 99.
+           05 WS-MVT-FILLER        PIC X(9).
 
        PROCEDURE DIVISION.
 
@@ -100,8 +109,8 @@
                    NOT AT END
                        ADD 1 TO WS-NB-ASSURES
                        MOVE FS-ASSURES-REC TO WS-ASSURE
-                       DISPLAY WS-MATR " | " WS-NOM " | "
-                               WS-PRENOM " | " WS-ADRESSE
+                       DISPLAY WS-MATR " | " WS-NOM-PRE " | "
+                               WS-RUE " | " WS-CP WS-VILLE
                END-READ
            END-PERFORM
 
@@ -130,7 +139,8 @@
                        ADD 1 TO WS-NB-MVTS
                        MOVE FS-MVTS-REC TO WS-MVT
                        DISPLAY WS-MVT-MATR " | " WS-MVT-CODE " | "
-                               WS-MVT-NOM " | " WS-MVT-PRENOM
+                               WS-MVT-NOM-PRE " | " WS-MVT-RUE " | "
+                               WS-MVT-CP WS-MVT-VILLE
                END-READ
            END-PERFORM
 
