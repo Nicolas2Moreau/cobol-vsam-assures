@@ -1,120 +1,171 @@
-# 🪟 Environnement de Test Local GNUCobol
+# 🚀 Environnement de Test Windows - Guide de Démarrage Rapide
 
-> **Note :** Cette branche (`gnucobol`) est dédiée aux tests locaux avec GNUCobol sur Windows. Elle permet de développer et tester sans accès constant au mainframe z/OS.
+> 📖 **Documentation technique complète** : [`DOCUMENTATIONWINDOWS.md`](DOCUMENTATIONWINDOWS.md)
+> 🔧 **Adaptations GNUCobol** : [`ADAPTATIONS.md`](ADAPTATIONS.md)
 
 ---
 
 ## 📋 Prérequis
 
-### Installation GNUCobol
+- GNUCobol installé et dans le PATH
+- Windows (scripts .bat)
 
-1. **Télécharger GNUCobol pour Windows :**
-   - Site officiel : https://gnucobol.sourceforge.io/
-   - Ou Arnold Trembley builds : https://www.arnoldtrembley.com/GnuCOBOL.htm
+## 🎯 Utilisation
 
-2. **Installer :**
-   - Extraire l'archive dans `C:\GnuCOBOL\`
-   - Ajouter `C:\GnuCOBOL\bin` au PATH Windows
+### Première utilisation
 
-3. **Vérifier l'installation :**
-   ```cmd
-   cobc --version
-   ```
+```cmd
+1. compile.bat    → Compile tous les programmes
+2. init.bat       → Initialise les données (KSDS + ESDS)
+3. run.bat        → Execute MAJASSU (mise à jour)
+```
+
+### Tests suivants
+
+```cmd
+reset.bat         → Remet à zéro les données
+run.bat           → Execute MAJASSU
+read.bat          → Affiche le contenu des fichiers .dat (avant/après)
+```
 
 ---
 
-## 🗂️ Structure du Répertoire
+## 📁 Structure
 
 ```
 windows-test/
-├── README.md           (ce fichier)
-├── QUICKSTART.md       (guide de démarrage rapide)
-├── ADAPTATIONS.md      (modifications appliquées)
-├── compile.bat         (compilation des programmes)
-├── init.bat            (initialisation données)
-├── run.bat             (exécution MAJASSU)
-├── reset.bat           (remise à zéro)
-├── COBOL/              (programmes COBOL adaptés)
-├── COPY/               (copybooks)
-├── DATA/               (données source - pré-triées par matricule)
-├── WORK/               (fichiers de travail - ignoré par git)
-└── bin/                (exécutables - ignoré par git)
+├── compile.bat      ← Compile LOADKSDS + MAJASSU
+├── init.bat         ← Charge les 20 assurés + 11 mouvements
+├── run.bat          ← Execute MAJASSU
+├── reset.bat        ← Remet à zéro
+├── read.bat         ← Affiche contenu .dat (avant/après)
+│
+├── COBOL/
+│   ├── LOADKSDS.cbl ← Utilitaire : charge le KSDS initial
+│   ├── READDATA.cbl ← Utilitaire : lit et affiche KSDS + ESDS
+│   ├── MAJASSU.cbl  ← Programme principal (mise à jour)
+│   ├── PGMVSAM.cbl  ← Accesseur VSAM (KSDS + ESDS)
+│   └── PGMERR.cbl   ← Gestion messages erreur
+│
+├── COPY/            ← Copybooks
+│
+├── DATA/            ← Données SOURCE (pré-triées par matricule)
+│   ├── ASSURES      ← 20 assurés (source, triés)
+│   └── MVTS         ← 11 mouvements (source, triés)
+│
+└── WORK/            ← Fichiers de TRAVAIL (modifiés par programmes)
+    ├── ASSURES.dat  ← KSDS données (créé par init)
+    ├── ASSURES.idx  ← KSDS index (créé auto)
+    ├── MVTS.dat     ← ESDS données (créé par init)
+    └── ETATANO.txt  ← Anomalies (créé par run)
 ```
 
 ---
 
-## 🔧 Différences GNUCobol vs Enterprise COBOL
+## 🔄 Workflow Détaillé
 
-### Limitations connues :
-- ❌ Pas de support VSAM natif (utiliser fichiers séquentiels ou indexed)
-- ❌ Certaines syntaxes z/OS non supportées
-- ⚠️ File status codes peuvent différer
-- ⚠️ CALL dynamique peut nécessiter des adaptations
+### 1. compile.bat
 
-### Adaptations nécessaires :
-1. **Fichiers VSAM → Fichiers indexed/séquentiels**
-   - KSDS → ORGANIZATION IS INDEXED
-   - ESDS → ORGANIZATION IS SEQUENTIAL
+Compile 2 executables :
+- **LOADKSDS.exe** : Lit DATA/ASSURES et crée WORK/ASSURES.dat (KSDS)
+- **MAJASSU.exe** : Programme principal (intègre PGMVSAM + PGMERR)
 
-2. **JCL → Scripts batch (.bat)**
-   - Pas de JCL sous Windows
-   - Utiliser les scripts fournis
+### 2. init.bat
 
-3. **SYSOUT → Fichiers texte**
-   - Rediriger les DISPLAY vers des fichiers
+Initialise les données :
+1. Copie DATA/MVTS → WORK/MVTS.dat (ESDS)
+2. Lance LOADKSDS.exe qui :
+   - Lit DATA/ASSURES (séquentiel)
+   - Crée WORK/ASSURES.dat (KSDS)
+   - GNUCobol crée WORK/ASSURES.idx (index)
 
----
+**Résultat :** État initial prêt (20 assurés dans KSDS, 11 mouvements dans ESDS)
 
-## 🚀 Utilisation
+### 3. run.bat
 
-### 1. Compilation
+Execute le traitement :
+1. Lance MAJASSU.exe qui :
+   - Ouvre WORK/ASSURES.dat (KSDS - lecture/écriture)
+   - Ouvre WORK/MVTS.dat (ESDS - lecture)
+   - Pour chaque mouvement :
+     - **C** (création) : WRITE nouvel assuré
+     - **M** (modification) : REWRITE assuré existant
+     - **S** (suppression) : DELETE assuré
+   - Génère WORK/ETATANO.txt (anomalies)
+2. Affiche les statistiques
+3. Affiche le fichier anomalies
 
+### 4. reset.bat
+
+Remet à zéro :
+1. Supprime WORK/*.*
+2. Relance init.bat
+
+### 5. read.bat
+
+Affiche le contenu des fichiers .dat :
+1. Compile READDATA.cbl (utilitaire de lecture)
+2. Affiche tous les enregistrements du KSDS (ASSURES)
+3. Affiche tous les enregistrements de l'ESDS (MVTS)
+4. Affiche le nombre total d'enregistrements
+
+**Utilisation typique :**
 ```cmd
-cd windows-test
-compile.bat
+read.bat              → Voir l'état actuel
+run.bat               → Exécuter MAJASSU
+read.bat              → Voir l'état après traitement (avant/après)
 ```
-
-Compile tous les programmes COBOL et génère les exécutables.
-
-### 2. Exécution
-
-```cmd
-run.bat
-```
-
-Lance le traitement de mise à jour des assurés.
-
-### 3. Vérification des résultats
-
-- **Anomalies :** `WORK/ETATANO.txt`
-- **Statistiques :** Affichées dans la console
-- **Fichiers générés :** `WORK/ASSURES.dat` (KSDS modifié)
 
 ---
 
-## 📝 Notes Importantes
+## 📊 Résultats Attendus
 
-### ⚠️ Fichiers DATA Pré-Triés
+### Statistiques (affichées dans run.bat)
 
-**Pour les besoins des tests GNUCobol**, les fichiers `DATA/ASSURES` et `DATA/MVTS` ont été **pré-triés par matricule** (ordre croissant). Cette étape simule le tri mainframe qui serait normalement effectué par JCL avant le REPRO.
+```
+================================================
+TRAITEMENT DE MISE A JOUR DES ASSURES
+================================================
+STATISTIQUES
+================================================
+MOUVEMENTS LUS       : 000011
+CREATIONS            : 000002
+MODIFICATIONS        : 000001
+SUPPRESSIONS         : 000002
+ANOMALIES            : 000006
+================================================
+```
 
-- Sur mainframe : Tri via `SORT` dans le JCL
-- Sur Windows : Fichiers déjà triés dans le dépôt
+### Fichier ETATANO.txt
 
-### Autres Notes
-
-- Les programmes ont été adaptés pour GNUCobol (voir `ADAPTATIONS.md`)
-- Les performances ne sont pas représentatives du mainframe
-- Cet environnement est uniquement pour le développement/tests locaux
-- Ne pas merger cette branche dans `main` (mainframe pur)
+```
+000346 ERREUR : 003 - 003 - MISE A JOUR SUR ENREGISTREMENT INEXISTANT
+000347 ERREUR : 004 - 004 - SUPPRESSION SUR ENREGISTREMENT INEXISTANT
+222203 ERREUR : 001 - 001 - CODE MOUVEMENT INVALIDE
+300003 ERREUR : 003 - 003 - MISE A JOUR SUR ENREGISTREMENT INEXISTANT
+300012 ERREUR : 001 - 001 - CODE MOUVEMENT INVALIDE
+300312 ERREUR : 001 - 001 - CODE MOUVEMENT INVALIDE
+```
 
 ---
 
-## 🔗 Liens Utiles
+## 🎓 Notes
 
-- [GNUCobol Documentation](https://gnucobol.sourceforge.io/doc/gnucobol.html)
-- [COBOL Programming Guide](https://open-cobol.sourceforge.io/guides/OpenCOBOL%20Programmers%20Guide.pdf)
-- [Mainframe → GNUCobol Migration](https://gnucobol.sourceforge.io/faq/index.html)
+- **KSDS** : Fichier indexé (ORGANIZATION IS INDEXED)
+  - Accès direct par clé (matricule)
+  - Accès séquentiel (READ NEXT)
+  - Index créé automatiquement par GNUCobol
+
+- **ESDS** : Fichier séquentiel (ORGANIZATION IS SEQUENTIAL)
+  - Accès séquentiel uniquement
+  - Pas d'index
+
+- **DATA/** : Jamais modifié (source)
+- **WORK/** : Modifié par les programmes (gitignore)
+
+- **Fichiers DATA pré-triés** : Les fichiers `DATA/ASSURES` et `DATA/MVTS` sont pré-triés par matricule (ordre croissant). Cela simule l'étape de tri mainframe (JCL SORT) qui précède normalement le REPRO.
+
+- **LINE SEQUENTIAL** : Les programmes utilisent `ORGANIZATION IS LINE SEQUENTIAL` pour lire les fichiers source avec retours à la ligne (`\n`), simulant ainsi la transition entre fichiers texte et fichiers VSAM.
 
 ---
 

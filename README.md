@@ -8,9 +8,19 @@
 
 ---
 
-> **🪟 TESTS WINDOWS avec GNUCobol ?**
-> **➡️ Consultez [`windows-test/README.md`](windows-test/README.md)** pour l'environnement de simulation complet !
-> *(Disponible sur branche `gnucobol`)*
+# 🪟 ENVIRONNEMENT DE TEST WINDOWS
+
+> ### ⚡ Vous voulez tester les programmes COBOL sous Windows avec GNUCobol ?
+>
+> ## 📂 **[`windows-test/`](windows-test/) - Guide de Démarrage Rapide**
+>
+> 🚀 **Environnement complet de simulation** : compilation, initialisation, exécution, lecture des fichiers .dat
+>
+> 📖 **Documentation complète** : [`windows-test/DOCUMENTATIONWINDOWS.md`](windows-test/DOCUMENTATIONWINDOWS.md)
+>
+> 🔧 **Scripts prêts à l'emploi** : `compile.bat`, `init.bat`, `run.bat`, `read.bat`, `reset.bat`
+>
+> ⚠️ **Disponible sur branche `gnucobol`** (ne pas merger dans `main`)
 
 ---
 
