@@ -26,7 +26,7 @@
 
        FD  F-ASSURES.
        01  FS-ASSURES-REC.
-           05 FS-ASSURES-KEY       PIC 9(6).
+           05 FS-ASSURES-KEY       PIC X(6).
            05 FS-ASSURES-DATA      PIC X(74).
 
        FD  F-MVTS.
