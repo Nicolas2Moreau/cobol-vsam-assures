@@ -1,0 +1,58 @@
+name: COBOL & JCL Syntax Check
+
+on:
+  push:
+    branches: [test]
+  pull_request:
+    branches: [test]
+
+jobs:
+  cobol-syntax:
+    name: COBOL Syntax Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install GNUCobol
+        run: sudo apt-get install -y gnucobol
+
+      - name: Check COBOL syntax
+        run: |
+          echo "=== Verification syntaxe COBOL ==="
+          FAILED=0
+          for f in COBOL/*.cbl; do
+            echo -n "  Checking $f ... "
+            if cobc -fsyntax-only -I COPY/ "$f" 2>&1; then
+              echo "OK"
+            else
+              echo "ECHEC: $f"
+              FAILED=1
+            fi
+          done
+          exit $FAILED
+
+  jcl-structure:
+    name: JCL Structure Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check JCL line length (max 80 chars)
+        run: |
+          echo "=== Verification structure JCL ==="
+          FAILED=0
+          for f in JCL/*.jcl; do
+            echo "  $f ..."
+            LINE_NUM=0
+            while IFS= read -r line; do
+              LINE_NUM=$((LINE_NUM + 1))
+              if [ ${#line} -gt 80 ]; then
+                echo "    ERREUR ligne $LINE_NUM: ${#line} caracteres (max 80)"
+                echo "    >>> $line"
+                FAILED=1
+              fi
+            done < "$f"
+          done
+          [ $FAILED -eq 0 ] && echo "  Toutes les lignes OK" || exit 1
