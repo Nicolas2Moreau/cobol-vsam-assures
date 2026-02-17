@@ -16,6 +16,7 @@
 
        01  WS-INDEX                PIC 99.
        01  WS-CODE-CHERCHE         PIC X(3).
+       01  WS-FOUND                PIC X VALUE 'N'.
 
        LINKAGE SECTION.
 
@@ -36,11 +37,12 @@
            MOVE LS-CODE-ERREUR TO WS-CODE-CHERCHE
 
       * Recherche dans la table
+           MOVE 'N' TO WS-FOUND
            PERFORM VARYING WS-INDEX FROM 1 BY 1
-               UNTIL WS-INDEX > 30
+               UNTIL WS-INDEX > 30 OR WS-FOUND = 'O'
                IF WS-MESSAGE(WS-INDEX)(1:3) = WS-CODE-CHERCHE
                    MOVE WS-MESSAGE(WS-INDEX) TO LS-LIBELLE-ERREUR
-                   EXIT PERFORM
+                   MOVE 'O' TO WS-FOUND
                END-IF
            END-PERFORM
 
