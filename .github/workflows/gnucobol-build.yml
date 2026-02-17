@@ -1,0 +1,94 @@
+name: GNUCobol Build & Integration Test
+
+on:
+  push:
+    branches: [gnucobol]
+  pull_request:
+    branches: [gnucobol]
+
+jobs:
+  build-and-test:
+    name: Compile & Run with GNUCobol
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: windows-test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install GNUCobol
+        run: sudo apt-get install -y gnucobol
+
+      - name: Create output directories
+        run: mkdir -p bin WORK
+
+      # ----------------------------------------
+      # COMPILATION
+      # ----------------------------------------
+      - name: Compile LOADKSDS
+        run: |
+          echo "=== Compilation LOADKSDS ==="
+          cobc -x -I COPY/ COBOL/LOADKSDS.cbl -o bin/LOADKSDS
+          echo "OK"
+
+      - name: Compile MAJASSU + PGMVSAM + PGMERR
+        run: |
+          echo "=== Compilation MAJASSU ==="
+          cobc -x -I COPY/ COBOL/MAJASSU.cbl COBOL/PGMVSAM.cbl COBOL/PGMERR.cbl -o bin/MAJASSU
+          echo "OK"
+
+      - name: Compile READDATA
+        run: |
+          echo "=== Compilation READDATA ==="
+          cobc -x -I COPY/ COBOL/READDATA.cbl -o bin/READDATA
+          echo "OK"
+
+      # ----------------------------------------
+      # INITIALISATION DES DONNEES
+      # ----------------------------------------
+      - name: Copy MVTS data file
+        run: |
+          echo "=== Copie MVTS ==="
+          cp DATA/MVTS WORK/MVTS.dat
+          echo "OK - $(wc -l < WORK/MVTS.dat) mouvements"
+
+      - name: Load KSDS (LOADKSDS)
+        run: |
+          echo "=== Chargement KSDS ASSURES ==="
+          ./bin/LOADKSDS
+          echo "Code retour: $?"
+
+      # ----------------------------------------
+      # EXECUTION
+      # ----------------------------------------
+      - name: Run MAJASSU
+        run: |
+          echo "=== Execution MAJASSU ==="
+          ./bin/MAJASSU
+          echo "Code retour: $?"
+
+      # ----------------------------------------
+      # VERIFICATION DES SORTIES
+      # ----------------------------------------
+      - name: Verify ETATANO output
+        run: |
+          echo "=== Verification sortie ETATANO ==="
+          if [ -f WORK/ETATANO.txt ]; then
+            echo "Fichier ETATANO produit :"
+            echo "----------------------------------------"
+            cat WORK/ETATANO.txt
+            echo "----------------------------------------"
+            echo "$(wc -l < WORK/ETATANO.txt) anomalie(s) detectee(s)"
+          else
+            echo "AVERTISSEMENT: Aucun fichier ETATANO produit"
+          fi
+
+      - name: Upload ETATANO as artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: etatano-output
+          path: windows-test/WORK/ETATANO.txt
+          if-no-files-found: warn
