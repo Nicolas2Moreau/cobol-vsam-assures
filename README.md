@@ -136,7 +136,7 @@ Les structures de données sont définies dans des copybooks réutilisables :
 ### Bibliothèques à créer une seule fois (TSO/ISPF option 3.2)
 
 ```
-&SYSUID..COB.SOURCE  (PDS, RECFM=FB, LRECL=80)  ← sources COBOL
+&SYSUID..COB.SRC     (PDS, RECFM=FB, LRECL=80)  ← sources COBOL
 &SYSUID..COB.CPY     (PDS, RECFM=FB, LRECL=80)  ← copybooks
 &SYSUID..COB.LOAD    (PDSE, RECFM=U)             ← load modules compilés
 API12.SEQ.ASSURES    (PS, RECFM=FB, LRECL=80)    ← données assurés
@@ -169,7 +169,7 @@ Reset complet  →  JCREVSAM  →  JMAJMVT
 ### Bibliothèques nécessaires
 
 ```
-&SYSUID..COB.SOURCE  - Programmes COBOL
+&SYSUID..COB.SRC     - Programmes COBOL
 &SYSUID..COB.CPY     - Copybooks
 &SYSUID..COB.LOAD    - Load modules
 API12.SEQ            - Fichiers séquentiels
@@ -183,11 +183,9 @@ API12.SEQ            - Fichiers séquentiels
 TSO/ISPF Option 3.4
 Dataset: &SYSUID..COB.CPY
 
-Uploader les 5 copybooks :
+Uploader les 3 copybooks utilisés par les programmes :
 ├── WASSURE.cpy
 ├── WFMVTSE.cpy
-├── CASSURES.cpy
-├── CFMVTS.cpy
 └── MESSAGES.cpy
 ```
 
@@ -195,7 +193,7 @@ Uploader les 5 copybooks :
 
 ```
 TSO/ISPF Option 2 (EDIT)
-Dataset: &SYSUID..COB.SOURCE
+Dataset: &SYSUID..COB.SRC
 
 Créer 3 membres :
 ├── PGMVSAM  (accesseur VSAM)
