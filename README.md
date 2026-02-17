@@ -202,11 +202,15 @@ Soumettre le JCL **JCOMPIL.jcl** :
 
 #### 6. Exécution
 
-**Première exécution** :
-1. Soumettre **JCREVSAM.jcl** — tri des fichiers séquentiels + création et chargement des clusters VSAM
-2. Soumettre **JRUN.jcl** — exécution du traitement MAJASSU
+**Initialisation (première fois ou reset complet)** :
+1. Soumettre **JCREVSAM.jcl** — définit la GDG ETATANO, crée et charge KSDS + ESDS
+2. Soumettre **JMAJMVT.jcl** — premier run opérationnel
 
-**Exécutions suivantes** : Soumettre uniquement **JRUN.jcl** (fichiers VSAM déjà en place)
+**Run opérationnel standard (nouveau lot de mouvements)** : Soumettre **JMAJMVT.jcl**
+- Recharge l'ESDS depuis le fichier MVTS séquentiel
+- Exécute MAJASSU, produit une nouvelle génération ETATANO(+1)
+
+**Rejouer le même lot sans recharger** : Soumettre **JRUN.jcl**
 
 ---
 
@@ -215,10 +219,11 @@ Soumettre le JCL **JCOMPIL.jcl** :
 ### Exécution de la Chaîne Complète
 
 ```bash
-# Sur TSO/ISPF
-# 1. Éditer JCREVSAM.jcl puis SUB  (création et chargement VSAM)
-# 2. Éditer JRUN.jcl     puis SUB  (exécution MAJASSU)
-# 3. Vérifier MAXCC=0 dans le SYSOUT
+# Sur TSO/ISPF — workflow standard
+# 1. Éditer JCREVSAM.jcl puis SUB  (initialisation VSAM + GDG, 1 seule fois)
+# 2. Éditer JMAJMVT.jcl  puis SUB  (rechargement ESDS + exécution MAJASSU)
+# 3. Éditer JRUN.jcl      puis SUB  (rejouer le même lot si besoin)
+# 4. Vérifier MAXCC=0 dans le SYSOUT
 ```
 
 ### Résultats Attendus
@@ -238,12 +243,13 @@ ANOMALIES            : 000006
 ================================================
 ```
 
-**Fichier d'anomalies (ETATANO)** :
+**Fichier d'anomalies (GDG ETATANO)** — une génération produite par run :
 ```
 200006 ERREUR : 004 - SUPPRESSION SUR ENREGISTREMENT INEXISTANT
 000346 ERREUR : 003 - MISE A JOUR SUR ENREGISTREMENT INEXISTANT
 222203 ERREUR : 001 - CODE MOUVEMENT INVALIDE
 ```
+Accessible via `API12.GDG.ETATANO(0)` (dernier run) ou `(-1)` (avant-dernier), etc.
 
 ---
 
@@ -266,8 +272,9 @@ cobol-vsam-assures/
 │   └── MVTS            # 11 mouvements
 ├── JCL/                # Scripts JCL
 │   ├── JCOMPIL.jcl     # Compilation des 3 programmes
-│   ├── JCREVSAM.jcl    # Tri + création et chargement des fichiers VSAM
-│   └── JRUN.jcl        # Exécution seule
+│   ├── JCREVSAM.jcl    # Init complète : GDG + KSDS + ESDS (reset)
+│   ├── JMAJMVT.jcl     # Run opérationnel : recharge ESDS + exécute MAJASSU
+│   └── JRUN.jcl        # Rejouer le même lot sans recharger
 ├── DOCS/               # Documentation détaillée (ignoré par git)
 ├── .gitignore
 └── README.md           # Ce fichier

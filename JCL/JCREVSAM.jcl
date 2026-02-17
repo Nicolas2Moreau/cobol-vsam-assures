@@ -6,38 +6,48 @@
 //             NOTIFY=&SYSUID,
 //             TIME=(0,10)
 //*---------------------------------------------------------------*
-//* CREATION ET CHARGEMENT DES FICHIERS VSAM                     *
-//* STEP1 : Tri ASSURES                                          *
-//* STEP2 : Création KSDS ASSURES3                               *
-//* STEP3 : Tri MVTS                                             *
-//* STEP4 : Création ESDS FMVTSE                                 *
+//* INITIALISATION COMPLETE : CREATION ET CHARGEMENT VSAM        *
+//* STEP1 : Definition base GDG pour ETATANO                     *
+//* STEP2 : Tri ASSURES → fichier temporaire &&ASSUREST          *
+//* STEP3 : Creation KSDS ASSURES depuis &&ASSUREST              *
+//* STEP4 : Tri MVTS → fichier temporaire &&MVTST                *
+//* STEP5 : Creation ESDS FMVTSE depuis &&MVTST                  *
 //*---------------------------------------------------------------*
 //*
 //*---------------------------------------------------------------*
-//* STEP1 : Tri fichier ASSURES sur Matricule + Adresse          *
+//* STEP1 : Definition base GDG pour ETATANO (reset si existant) *
 //*---------------------------------------------------------------*
-//DELTEMP  EXEC PGM=IDCAMS
+//DEFGDG   EXEC PGM=IDCAMS
 //SYSPRINT DD SYSOUT=*
 //SYSIN    DD *
-  DELETE API12.SEQ.ASSUREST
+  DELETE (API12.GDG.ETATANO) GDG FORCE
   IF LASTCC LE 8 THEN SET MAXCC = 0
+  DEFINE GDG(NAME(API12.GDG.ETATANO)  -
+             LIMIT(10)                 -
+             NOEMPTY                   -
+             SCRATCH)
 /*
+//*
+//*---------------------------------------------------------------*
+//* STEP2 : Tri fichier ASSURES sur Matricule + Adresse          *
+//*---------------------------------------------------------------*
 //TRIASS   EXEC PGM=SORT
 //SYSOUT   DD SYSOUT=*
 //SORTIN   DD DSN=API12.SEQ.ASSURES,DISP=SHR
-//SORTOUT  DD DSN=API12.SEQ.ASSUREST,
-//            DISP=(NEW,CATLG,DELETE),
-//            SPACE=(CYL,(5,2)),
+//SORTOUT  DD DSN=&&ASSUREST,
+//            DISP=(NEW,PASS,DELETE),
+//            SPACE=(TRK,(1,1)),
 //            DCB=(RECFM=FB,LRECL=80)
 //SYSIN    DD *
   SORT FIELDS=(1,6,ZD,A,27,18,CH,D)
 /*
 //*
 //*---------------------------------------------------------------*
-//* STEP2 : Création KSDS ASSURES3                               *
+//* STEP3 : Creation KSDS ASSURES depuis &&ASSUREST              *
 //*---------------------------------------------------------------*
 //CKSDS    EXEC PGM=IDCAMS
 //SYSPRINT DD SYSOUT=*
+//ASSUREST DD DSN=&&ASSUREST,DISP=(OLD,DELETE,DELETE)
 //SYSIN    DD *
   DELETE (API12.KSDS.ASSURES) CLUSTER
   IF LASTCC LE 8 THEN SET MAXCC = 0
@@ -50,36 +60,30 @@
                   FREESPACE(40 40))                      -
          DATA  (NAME(API12.KSDS.ASSURES.DATA))           -
          INDEX (NAME(API12.KSDS.ASSURES.INDEX))
-  REPRO INDATASET(API12.SEQ.ASSUREST)                    -
+  REPRO INFILE(ASSUREST)                                 -
         OUTDATASET(API12.KSDS.ASSURES)
 /*
 //*
 //*---------------------------------------------------------------*
-//* STEP3 : Tri fichier MVTS sur Matricule + Code mouvement      *
+//* STEP4 : Tri fichier MVTS sur Matricule + Code mouvement      *
 //*---------------------------------------------------------------*
-//DELTMVT  EXEC PGM=IDCAMS
-//SYSPRINT DD SYSOUT=*
-//SYSIN    DD *
-  DELETE API12.SEQ.MVTST
-  IF LASTCC LE 8 THEN SET MAXCC = 0
-/*
 //TRIMVT   EXEC PGM=SORT
 //SYSOUT   DD SYSOUT=*
 //SORTIN   DD DSN=API12.SEQ.MVTS,DISP=SHR
-//SORTOUT  DD DSN=API12.SEQ.MVTST,
-//            DISP=(NEW,CATLG,DELETE),
-//            SPACE=(CYL,(5,2)),
+//SORTOUT  DD DSN=&&MVTST,
+//            DISP=(NEW,PASS,DELETE),
+//            SPACE=(TRK,(1,1)),
 //            DCB=(RECFM=FB,LRECL=80)
 //SYSIN    DD *
   SORT FIELDS=(1,6,ZD,A,62,1,CH,A)
 /*
 //*
 //*---------------------------------------------------------------*
-//* STEP4 : Création ESDS FMVTSE                                 *
+//* STEP5 : Creation ESDS FMVTSE depuis &&MVTST                  *
 //*---------------------------------------------------------------*
 //CESDS    EXEC PGM=IDCAMS
 //SYSPRINT DD SYSOUT=*
-//MVTST    DD DSN=API12.SEQ.MVTST,DISP=SHR
+//MVTST    DD DSN=&&MVTST,DISP=(OLD,DELETE,DELETE)
 //SYSIN    DD *
   DELETE  (API12.ESDS.MVTS) CLUSTER PURGE
   SET MAXCC = 0
