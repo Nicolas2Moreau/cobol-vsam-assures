@@ -56,7 +56,7 @@
 //            DISP=OLD
 //MVTS     DD DSN=API12.ESDS.MVTS,
 //            DISP=SHR
-//ETATANO  DD DSN=API12.GDG.ETATANO(+1),
+//ETATANO  DD DSN=API12.GDGASU(+1),
 //            DISP=(NEW,CATLG,DELETE),
 //            SPACE=(TRK,(1,1)),
 //            DCB=(RECFM=FB,LRECL=80)

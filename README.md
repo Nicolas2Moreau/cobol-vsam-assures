@@ -128,19 +128,57 @@ Les structures de données sont définies dans des copybooks réutilisables :
 
 ---
 
-## 📦 Installation
+## 🚦 Mode d'emploi rapide
 
-### Prérequis
+> Tout ce qu'il faut savoir avant de lancer quoi que ce soit.
 
-- **Environnement** : Mainframe z/OS avec TSO/ISPF
-- **Accès** : Bibliothèques PDS disponibles
-- **Volumes** : Volume DASD pour VSAM (ex: AJCWK1)
+### Prérequis sur le mainframe
+
+| Quoi | Détail |
+|------|--------|
+| Environnement | z/OS avec accès TSO/ISPF |
+| Volume DASD | Un volume disponible pour VSAM (ex: `AJCWK1`) — à adapter dans les JCL |
+| Bibliothèques PDS | Créer avant de commencer (voir ci-dessous) |
+| Catalogue VSAM | La base GDG `API12.GDGASU` est créée automatiquement par JCREVSAM |
+
+### Bibliothèques à créer une seule fois (TSO/ISPF option 3.2)
+
+```
+&SYSUID..COB.SOURCE  (PDS, RECFM=FB, LRECL=80)  ← sources COBOL
+&SYSUID..COB.CPY     (PDS, RECFM=FB, LRECL=80)  ← copybooks
+&SYSUID..COB.LOAD    (PDSE, RECFM=U)             ← load modules compilés
+API12.SEQ.ASSURES    (PS, RECFM=FB, LRECL=80)    ← données assurés
+API12.SEQ.MVTS       (PS, RECFM=FB, LRECL=80)    ← données mouvements
+```
+
+### Les 4 JCL et quand les utiliser
+
+```
+JCOMPIL.jcl   → compiler les programmes        (1 fois, ou après modif source)
+JCREVSAM.jcl  → initialisation complète        (1 fois, ou reset total)
+JMAJMVT.jcl   → run opérationnel standard      (à chaque nouveau lot de mvts)
+JRERUN.jcl    → rejouer sans recharger         (si JMAJMVT a déjà tourné)
+```
+
+### Ordre de lancement
+
+```
+1ère fois      →  JCOMPIL  →  JCREVSAM  →  JMAJMVT
+Nouveau lot    →  JMAJMVT
+Rejouer        →  JRERUN
+Recompiler     →  JCOMPIL
+Reset complet  →  JCREVSAM  →  JMAJMVT
+```
+
+---
+
+## 📦 Installation détaillée
 
 ### Bibliothèques nécessaires
 
 ```
 &SYSUID..COB.SOURCE  - Programmes COBOL
-&SYSUID..COB.CPY     - Copy books
+&SYSUID..COB.CPY     - Copybooks
 &SYSUID..COB.LOAD    - Load modules
 API12.SEQ            - Fichiers séquentiels
 ```
@@ -210,7 +248,7 @@ Soumettre le JCL **JCOMPIL.jcl** :
 - Recharge l'ESDS depuis le fichier MVTS séquentiel
 - Exécute MAJASSU, produit une nouvelle génération ETATANO(+1)
 
-**Rejouer le même lot sans recharger** : Soumettre **JRUN.jcl**
+**Rejouer le même lot sans recharger** : Soumettre **JRERUN.jcl**
 
 ---
 
@@ -222,7 +260,7 @@ Soumettre le JCL **JCOMPIL.jcl** :
 # Sur TSO/ISPF — workflow standard
 # 1. Éditer JCREVSAM.jcl puis SUB  (initialisation VSAM + GDG, 1 seule fois)
 # 2. Éditer JMAJMVT.jcl  puis SUB  (rechargement ESDS + exécution MAJASSU)
-# 3. Éditer JRUN.jcl      puis SUB  (rejouer le même lot si besoin)
+# 3. Éditer JRERUN.jcl    puis SUB  (rejouer le même lot si besoin)
 # 4. Vérifier MAXCC=0 dans le SYSOUT
 ```
 
@@ -249,7 +287,7 @@ ANOMALIES            : 000006
 000346 ERREUR : 003 - MISE A JOUR SUR ENREGISTREMENT INEXISTANT
 222203 ERREUR : 001 - CODE MOUVEMENT INVALIDE
 ```
-Accessible via `API12.GDG.ETATANO(0)` (dernier run) ou `(-1)` (avant-dernier), etc.
+Accessible via `API12.GDGASU(0)` (dernier run) ou `(-1)` (avant-dernier), etc.
 
 ---
 
@@ -274,7 +312,7 @@ cobol-vsam-assures/
 │   ├── JCOMPIL.jcl     # Compilation des 3 programmes
 │   ├── JCREVSAM.jcl    # Init complète : GDG + KSDS + ESDS (reset)
 │   ├── JMAJMVT.jcl     # Run opérationnel : recharge ESDS + exécute MAJASSU
-│   └── JRUN.jcl        # Rejouer le même lot sans recharger
+│   └── JRERUN.jcl      # Rejouer le même lot sans recharger
 ├── DOCS/               # Documentation détaillée (ignoré par git)
 ├── .gitignore
 └── README.md           # Ce fichier
