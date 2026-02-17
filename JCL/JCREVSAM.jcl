@@ -1,4 +1,4 @@
-//API12E   JOB (ACCT#),'EXEC PROJET',
+//API12V   JOB (ACCT#),'CREATION VSAM',
 //             MSGCLASS=H,
 //             CLASS=A,
 //             REGION=4M,
@@ -6,12 +6,11 @@
 //             NOTIFY=&SYSUID,
 //             TIME=(0,10)
 //*---------------------------------------------------------------*
-//* CHAINE COMPLETE DE TRAITEMENT                                *
+//* CREATION ET CHARGEMENT DES FICHIERS VSAM                     *
 //* STEP1 : Tri ASSURES                                          *
 //* STEP2 : Création KSDS ASSURES3                               *
 //* STEP3 : Tri MVTS                                             *
 //* STEP4 : Création ESDS FMVTSE                                 *
-//* STEP5 : Exécution MAJASSU                                    *
 //*---------------------------------------------------------------*
 //*
 //*---------------------------------------------------------------*
@@ -91,22 +90,4 @@
   REPRO INFILE(MVTST)                       -
         OUTDATASET(API12.ESDS.MVTS)
 /*
-//*
-//*---------------------------------------------------------------*
-//* STEP5 : Exécution MAJASSU                                    *
-//*---------------------------------------------------------------*
-//EXECMAJ  EXEC PGM=MAJASSU
-//STEPLIB  DD DSN=&SYSUID..COB.LOAD,DISP=SHR
-//*
-//SYSPRINT DD SYSOUT=*
-//SYSOUT   DD SYSOUT=*
-//*
-//ASSURES  DD DSN=API12.KSDS.ASSURES,
-//            DISP=OLD
-//MVTS     DD DSN=API12.ESDS.MVTS,
-//            DISP=SHR
-//ETATANO  DD DSN=API12.SEQ.ETATANO,
-//            DISP=(NEW,CATLG,DELETE),
-//            SPACE=(CYL,(1,1)),
-//            DCB=(RECFM=FB,LRECL=80)
 //*

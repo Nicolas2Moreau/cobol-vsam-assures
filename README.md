@@ -202,13 +202,11 @@ Soumettre le JCL **JCOMPIL.jcl** :
 
 #### 6. Exécution
 
-**Première exécution** : Soumettre **JEXEC.jcl** (chaîne complète)
-- Tri des fichiers
-- Création des clusters VSAM
-- Chargement des données
-- Exécution du traitement
+**Première exécution** :
+1. Soumettre **JCREVSAM.jcl** — tri des fichiers séquentiels + création et chargement des clusters VSAM
+2. Soumettre **JRUN.jcl** — exécution du traitement MAJASSU
 
-**Exécutions suivantes** : Soumettre **JRUN.jcl** (exécution seule)
+**Exécutions suivantes** : Soumettre uniquement **JRUN.jcl** (fichiers VSAM déjà en place)
 
 ---
 
@@ -218,8 +216,8 @@ Soumettre le JCL **JCOMPIL.jcl** :
 
 ```bash
 # Sur TSO/ISPF
-# 1. Éditer JEXEC.jcl
-# 2. Commande: SUB
+# 1. Éditer JCREVSAM.jcl puis SUB  (création et chargement VSAM)
+# 2. Éditer JRUN.jcl     puis SUB  (exécution MAJASSU)
 # 3. Vérifier MAXCC=0 dans le SYSOUT
 ```
 
@@ -268,7 +266,7 @@ cobol-vsam-assures/
 │   └── MVTS            # 11 mouvements
 ├── JCL/                # Scripts JCL
 │   ├── JCOMPIL.jcl     # Compilation des 3 programmes
-│   ├── JEXEC.jcl       # Chaîne complète (tri + VSAM + exec)
+│   ├── JCREVSAM.jcl    # Tri + création et chargement des fichiers VSAM
 │   └── JRUN.jcl        # Exécution seule
 ├── DOCS/               # Documentation détaillée (ignoré par git)
 ├── .gitignore
