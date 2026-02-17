@@ -85,10 +85,46 @@ jobs:
             echo "AVERTISSEMENT: Aucun fichier ETATANO produit"
           fi
 
+      # ----------------------------------------
+      # GOLDEN MASTER - ETAT KSDS APRES MAJASSU
+      # ----------------------------------------
+      - name: Capture READDATA output (golden master)
+        run: |
+          echo "=== Lecture KSDS apres traitement ==="
+          ./bin/READDATA > WORK/READDATA_out.txt 2>&1
+          echo "--- Contenu READDATA ---"
+          cat WORK/READDATA_out.txt
+
+      - name: Compare against golden master (if exists)
+        run: |
+          EXPECTED="../expected/READDATA_expected.txt"
+          if [ -f "$EXPECTED" ]; then
+            echo "=== Comparaison golden master ==="
+            if diff -u "$EXPECTED" WORK/READDATA_out.txt; then
+              echo "OK - KSDS conforme au golden master"
+            else
+              echo "ECHEC - KSDS different du golden master !"
+              echo "Si c'est intentionnel, regenerer expected/READDATA_expected.txt"
+              exit 1
+            fi
+          else
+            echo "INFO: Pas encore de golden master."
+            echo "Recuperer l'artifact 'readdata-output' et le commiter"
+            echo "dans expected/READDATA_expected.txt sur la branche gnucobol."
+          fi
+
       - name: Upload ETATANO as artifact
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: etatano-output
           path: windows-test/WORK/ETATANO.txt
+          if-no-files-found: warn
+
+      - name: Upload READDATA output as artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: readdata-output
+          path: windows-test/WORK/READDATA_out.txt
           if-no-files-found: warn
