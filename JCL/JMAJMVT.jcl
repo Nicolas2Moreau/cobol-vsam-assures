@@ -20,8 +20,7 @@
 //SORTIN   DD DSN=API12.SEQ.MVTS,DISP=SHR
 //SORTOUT  DD DSN=&&MVTST,
 //            DISP=(NEW,PASS,DELETE),
-//            SPACE=(TRK,(1,1)),
-//            DCB=(RECFM=FB,LRECL=80)
+//            SPACE=(TRK,(1,1))
 //SYSIN    DD *
   SORT FIELDS=(1,6,ZD,A,62,1,CH,A)
 /*
