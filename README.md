@@ -7,6 +7,14 @@
 [![License](https://img.shields.io/badge/License-Educational-orange)](LICENSE)
 
 ---
+<br>
+
+>  ## ![VSAM](https://img.shields.io/badge/Windows-OS-green) **Tester sous Windows avec GNUCobol ?** Rendez-vous sur la branche **`gnucobol`** !
+
+<br>
+<br>
+
+---
 
 ## 📋 Sommaire
 
@@ -112,19 +120,57 @@ Les structures de données sont définies dans des copybooks réutilisables :
 
 ---
 
-## 📦 Installation
+## 🚦 Mode d'emploi rapide
 
-### Prérequis
+> Tout ce qu'il faut savoir avant de lancer quoi que ce soit.
 
-- **Environnement** : Mainframe z/OS avec TSO/ISPF
-- **Accès** : Bibliothèques PDS disponibles
-- **Volumes** : Volume DASD pour VSAM (ex: AJCWK1)
+### Prérequis sur le mainframe
+
+| Quoi | Détail |
+|------|--------|
+| Environnement | z/OS avec accès TSO/ISPF |
+| Volume DASD | Un volume disponible pour VSAM (ex: `AJCWK1`) — à adapter dans les JCL |
+| Bibliothèques PDS | Créer avant de commencer (voir ci-dessous) |
+| Catalogue VSAM | La base GDG `API12.GDGASU` est créée automatiquement par JCREVSAM |
+
+### Bibliothèques à créer une seule fois (TSO/ISPF option 3.2)
+
+```
+&SYSUID..COB.SOURCE  (PDS, RECFM=FB, LRECL=80)  ← sources COBOL
+&SYSUID..COB.CPY     (PDS, RECFM=FB, LRECL=80)  ← copybooks
+&SYSUID..COB.LOAD    (PDSE, RECFM=U)             ← load modules compilés
+API12.SEQ.ASSURES    (PS, RECFM=FB, LRECL=80)    ← données assurés
+API12.SEQ.MVTS       (PS, RECFM=FB, LRECL=80)    ← données mouvements
+```
+
+### Les 4 JCL et quand les utiliser
+
+```
+JCOMPIL.jcl   → compiler les programmes        (1 fois, ou après modif source)
+JCREVSAM.jcl  → initialisation complète        (1 fois, ou reset total)
+JMAJMVT.jcl   → run opérationnel standard      (à chaque nouveau lot de mvts)
+JRERUN.jcl    → rejouer sans recharger         (si JMAJMVT a déjà tourné)
+```
+
+### Ordre de lancement
+
+```
+1ère fois      →  JCOMPIL  →  JCREVSAM  →  JMAJMVT
+Nouveau lot    →  JMAJMVT
+Rejouer        →  JRERUN
+Recompiler     →  JCOMPIL
+Reset complet  →  JCREVSAM  →  JMAJMVT
+```
+
+---
+
+## 📦 Installation détaillée
 
 ### Bibliothèques nécessaires
 
 ```
 &SYSUID..COB.SOURCE  - Programmes COBOL
-&SYSUID..COB.CPY     - Copy books
+&SYSUID..COB.CPY     - Copybooks
 &SYSUID..COB.LOAD    - Load modules
 API12.SEQ            - Fichiers séquentiels
 ```
@@ -186,13 +232,15 @@ Soumettre le JCL **JCOMPIL.jcl** :
 
 #### 6. Exécution
 
-**Première exécution** : Soumettre **JEXEC.jcl** (chaîne complète)
-- Tri des fichiers
-- Création des clusters VSAM
-- Chargement des données
-- Exécution du traitement
+**Initialisation (première fois ou reset complet)** :
+1. Soumettre **JCREVSAM.jcl** — définit la GDG ETATANO, crée et charge KSDS + ESDS
+2. Soumettre **JMAJMVT.jcl** — premier run opérationnel
 
-**Exécutions suivantes** : Soumettre **JRUN.jcl** (exécution seule)
+**Run opérationnel standard (nouveau lot de mouvements)** : Soumettre **JMAJMVT.jcl**
+- Recharge l'ESDS depuis le fichier MVTS séquentiel
+- Exécute MAJASSU, produit une nouvelle génération ETATANO(+1)
+
+**Rejouer le même lot sans recharger** : Soumettre **JRERUN.jcl**
 
 ---
 
@@ -201,10 +249,11 @@ Soumettre le JCL **JCOMPIL.jcl** :
 ### Exécution de la Chaîne Complète
 
 ```bash
-# Sur TSO/ISPF
-# 1. Éditer JEXEC.jcl
-# 2. Commande: SUB
-# 3. Vérifier MAXCC=0 dans le SYSOUT
+# Sur TSO/ISPF — workflow standard
+# 1. Éditer JCREVSAM.jcl puis SUB  (initialisation VSAM + GDG, 1 seule fois)
+# 2. Éditer JMAJMVT.jcl  puis SUB  (rechargement ESDS + exécution MAJASSU)
+# 3. Éditer JRERUN.jcl    puis SUB  (rejouer le même lot si besoin)
+# 4. Vérifier MAXCC=0 dans le SYSOUT
 ```
 
 ### Résultats Attendus
@@ -224,12 +273,13 @@ ANOMALIES            : 000006
 ================================================
 ```
 
-**Fichier d'anomalies (ETATANO)** :
+**Fichier d'anomalies (GDG ETATANO)** — une génération produite par run :
 ```
 200006 ERREUR : 004 - SUPPRESSION SUR ENREGISTREMENT INEXISTANT
 000346 ERREUR : 003 - MISE A JOUR SUR ENREGISTREMENT INEXISTANT
 222203 ERREUR : 001 - CODE MOUVEMENT INVALIDE
 ```
+Accessible via `API12.GDGASU(0)` (dernier run) ou `(-1)` (avant-dernier), etc.
 
 ---
 
@@ -252,8 +302,9 @@ cobol-vsam-assures/
 │   └── MVTS            # 11 mouvements
 ├── JCL/                # Scripts JCL
 │   ├── JCOMPIL.jcl     # Compilation des 3 programmes
-│   ├── JEXEC.jcl       # Chaîne complète (tri + VSAM + exec)
-│   └── JRUN.jcl        # Exécution seule
+│   ├── JCREVSAM.jcl    # Init complète : GDG + KSDS + ESDS (reset)
+│   ├── JMAJMVT.jcl     # Run opérationnel : recharge ESDS + exécute MAJASSU
+│   └── JRERUN.jcl      # Rejouer le même lot sans recharger
 ├── DOCS/               # Documentation détaillée (ignoré par git)
 ├── .gitignore
 └── README.md           # Ce fichier
