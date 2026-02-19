@@ -4,7 +4,7 @@
       *---------------------------------------------------------------*
       * PGMDB2 - Sous-programme accesseur DB2                        *
       * Interface identique a PGMVSAM (zone 120 octets, PDF p.16-17) *
-      * Table cible : API12.ASSURES                                   *
+      * Table cible : ASSURES                                   *
       * DB2 Version 8 / Enterprise COBOL 3.1.1 / z/OS                *
       *---------------------------------------------------------------*
 
@@ -16,7 +16,7 @@
                INCLUDE SQLCA
            END-EXEC.
 
-      * DCLGEN table API12.ASSURES
+      * DCLGEN table ASSURES
            EXEC SQL
                INCLUDE DCLASSU
            END-EXEC.
@@ -26,7 +26,7 @@
                DECLARE CSR-ASSURES CURSOR FOR
                SELECT MATASS, NOMPRE, RUESS, CPASS,
                       VILLSS, CODVEH, PRIMSS, BONMAL, TAUXSS
-               FROM API12.ASSURES
+               FROM ASSURES
                ORDER BY MATASS
            END-EXEC.
 
@@ -130,7 +130,7 @@
                INTO :WS-MATASS, :WS-NOMPRE, :WS-RUESS, :WS-CPASS,
                     :WS-VILLSS, :WS-CODVEH, :WS-PRIMSS, :WS-BONMAL,
                     :WS-TAUXSS
-               FROM API12.ASSURES
+               FROM ASSURES
                WHERE MATASS = :WS-MATASS
            END-EXEC
            MOVE SQLCODE TO WS-SQLCODE
@@ -144,7 +144,7 @@
        FUNC-REWRITE.
            PERFORM MOVE-LS-TO-WS
            EXEC SQL
-               UPDATE API12.ASSURES
+               UPDATE ASSURES
                   SET NOMPRE = :WS-NOMPRE,
                       RUESS  = :WS-RUESS,
                       CPASS  = :WS-CPASS,
@@ -164,7 +164,7 @@
        FUNC-DELETE.
            MOVE LS-ENREG(1:6) TO WS-MATASS
            EXEC SQL
-               DELETE FROM API12.ASSURES
+               DELETE FROM ASSURES
                WHERE MATASS = :WS-MATASS
            END-EXEC
            MOVE SQLCODE TO WS-SQLCODE
@@ -176,7 +176,7 @@
        FUNC-WRITE.
            PERFORM MOVE-LS-TO-WS
            EXEC SQL
-               INSERT INTO API12.ASSURES
+               INSERT INTO ASSURES
                  (MATASS, NOMPRE, RUESS, CPASS,
                   VILLSS, CODVEH, PRIMSS, BONMAL, TAUXSS)
                VALUES
