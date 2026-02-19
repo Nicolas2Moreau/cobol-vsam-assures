@@ -59,17 +59,17 @@ et au copybook `COPY/WASSURE.cpy`.
 
 ### Correspondance types COBOL/DB2
 
-| Champ COBOL (DISPLAY)      | Type DB2         | Type COBOL DB2            |
-|----------------------------|------------------|---------------------------|
-| A-MATASS  PIC 9(6)         | CHAR(6)          | PIC X(6)                  |
-| A-NOMASS  PIC X(20)        | CHAR(20)         | PIC X(20)                 |
-| A-RUESS   PIC X(20)        | CHAR(20)         | PIC X(20)                 |
-| A-CPASS   PIC 9(5)         | CHAR(5)          | PIC X(5)                  |
-| A-VILLESS PIC X(12)        | CHAR(12)         | PIC X(12)                 |
-| A-TYPVEH  PIC X(2)         | CHAR(2)          | PIC X(2)                  |
-| A-PRIME   PIC 9(4)V99      | DECIMAL(6,2)     | PIC S9(4)V9(2) COMP-3     |
-| A-BM      PIC 99           | SMALLINT         | PIC S9(4) COMP            |
-| A-TAUX    PIC 99           | SMALLINT         | PIC S9(4) COMP            |
+| Champ COBOL (DISPLAY)  | Colonne DB2 | Type DB2       | Type COBOL DCLGEN         |
+|------------------------|-------------|----------------|---------------------------|
+| A-MAT    PIC 9(6)      | MATASS      | CHAR(6)        | PIC X(6)                  |
+| A-NOM-PRE PIC X(20)    | NOMPRE      | CHAR(20)       | PIC X(20)                 |
+| A-RUE    PIC X(18)     | RUESS       | CHAR(18)       | PIC X(18)                 |
+| A-CP     PIC 9(5)      | CPASS       | CHAR(5)        | PIC X(5)                  |
+| A-VILLE  PIC X(12)     | VILLSS      | CHAR(12)       | PIC X(12)                 |
+| A-CODE   PIC X(1)      | CODVEH      | CHAR(1)        | PIC X(1)                  |
+| A-PRIME  PIC 9(4)V99   | PRIMSS      | DECIMAL(6,2)   | PIC S9(4)V9(2) COMP-3     |
+| A-BM     PIC X(1)      | BONMAL      | CHAR(1)        | PIC X(1)                  |
+| A-TAUX   PIC 99        | TAUXSS      | SMALLINT       | PIC S9(4) COMP            |
 
 **IMPERATIF** : Les champs numériques DISPLAY du copybook WASSURE doivent être convertis
 via MOVE vers les types COMP-3/COMP de la DCLGEN avant INSERT/UPDATE.
@@ -218,8 +218,11 @@ MOVE WS-TAUX   TO DCL-TAUX     -- PIC 99      -> PIC S9(4) COMP
 ## TODO - Ordre de développement
 
 1. [ ] Créer `SQL/CREATAB.sql` - DDL table API12.ASSURES
-2. [ ] Générer `COPY/ASSURE.cpy` - DCLGEN depuis DB2
-3. [ ] Coder `COBOL/PGMDB2.cbl` - Accesseur DB2
-4. [ ] Créer `JCL/JCOMPDB2.jcl` - JCL précompilation + compilation
-5. [ ] Adapter `COBOL/MAJASSU.cbl` - Appel PGMDB2 au lieu de PGMVSAM
-6. [ ] Tests de validation
+2. [ ] Exécuter le DDL sur le mainframe (SPUFI ou DSNTEP2)
+3. [ ] Lancer DCLGEN sur mainframe : génère automatiquement `COPY/ASSURE.cpy`
+         → DSNHPCK ou via ISPF DB2I Option 2 (DCLGEN)
+         → Récupérer le fichier généré et le placer dans DB2/COPY/
+4. [ ] Coder `COBOL/PGMDB2.cbl` - Accesseur DB2
+5. [ ] Créer `JCL/JCOMPDB2.jcl` - JCL précompilation DB2 + compilation COBOL
+6. [ ] Adapter `COBOL/MAJASSU.cbl` - Appel PGMDB2 au lieu de PGMVSAM
+7. [ ] Tests de validation
