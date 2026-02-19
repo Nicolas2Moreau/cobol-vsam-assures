@@ -35,8 +35,7 @@ CREATE TABLE API12.ASSURES
    PRIMSS   DECIMAL(6,2)  NOT NULL WITH DEFAULT 0,
    BONMAL   CHAR(1)       NOT NULL WITH DEFAULT ' ',
    TAUXSS   SMALLINT      NOT NULL WITH DEFAULT 0,
-   PRIMARY KEY (MATASS))
-  IN DATABASE API12DB;
+   PRIMARY KEY (MATASS));
 
 ------------------------------------------------------------------
 -- STEP 3 : Index (cree automatiquement via PRIMARY KEY,
