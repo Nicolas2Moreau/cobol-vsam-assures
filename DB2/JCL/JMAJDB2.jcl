@@ -51,7 +51,7 @@
 //*         MAJASSU appelle PGMDB2 (DB2) pour ASSURES3          *
 //*         MAJASSU appelle PGMVSAM (VSAM) pour FMVTSE          *
 //*---------------------------------------------------------------*
-//EXECMAJ  EXEC PGM=IKJEFT01,COND=(4,LT),DYNAMNBR=20
+//EXECMAJ  EXEC PGM=IKJEFT01,COND=(4,LT)
 //STEPLIB  DD DSN=&SYSUID..COB.LOAD,DISP=SHR
 //*
 //SYSPRINT DD SYSOUT=*
