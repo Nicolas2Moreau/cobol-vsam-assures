@@ -1,4 +1,4 @@
-# 🪟 Documentation Technique - Environnement Windows GNUCobol
+# ![VSAM](https://img.shields.io/badge/Windows-OS-green) Documentation Technique - Environnement Windows GNUCobol
 
 > **Documentation technique complète** de l'environnement de test GNUCobol
 >
