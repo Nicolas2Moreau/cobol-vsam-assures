@@ -1,5 +1,5 @@
 //API12V   JOB (ACCT#),'CREATION VSAM',
-//             MSGCLASS=H,
+//            MSGCLASS=H,
 //             CLASS=A,
 //             REGION=4M,
 //             MSGLEVEL=(1,1),
@@ -8,32 +8,37 @@
 //*---------------------------------------------------------------*
 //* INITIALISATION COMPLETE : CREATION ET CHARGEMENT VSAM        *
 //* STEP1 : Definition base GDG pour ETATANO                     *
-//* STEP2 : Tri ASSURES → fichier temporaire &&ASSUREST          *
+//* STEP2 : Tri ASSURES ? fichier temporaire &&ASSUREST          *
 //* STEP3 : Creation KSDS ASSURES depuis &&ASSUREST              *
-//* STEP4 : Tri MVTS → fichier temporaire &&MVTST                *
+//* STEP4 : Tri MVTS ? fichier temporaire &&MVTST                *
 //* STEP5 : Creation ESDS FMVTSE depuis &&MVTST                  *
 //*---------------------------------------------------------------*
 //*
 //*---------------------------------------------------------------*
 //* STEP1 : Definition base GDG pour ETATANO (reset si existant) *
 //*---------------------------------------------------------------*
-//DEFGDG   EXEC PGM=IDCAMS
-//SYSPRINT DD SYSOUT=*
-//SYSIN    DD *
-  DELETE (API12.GDGASU) GDG FORCE
-  IF LASTCC LE 8 THEN SET MAXCC = 0
-  DEFINE GDG(NAME(API12.GDGASU)        -
-             LIMIT(10)                 -
-             NOEMPTY                   -
-             SCRATCH)
-/*
+//* GDG API12.GDGASU existe deja dans CATALOG.OS390.MASTER
+//* DELETE interdit (RC190) - recréation non nécessaire
+//* Le GDG est correctement defini : LIMIT(10) SCRATCH NOEMPTY
+//*DEFGDG   EXEC PGM=IDCAMS
+//*SYSPRINT DD SYSOUT=*
+//*SYSIN    DD *
+//*  DELETE (API12.GDGASU) GDG FORCE
+//*  IF LASTCC LE 8 THEN SET MAXCC = 0
+//*  DEFINE GDG(NAME(API12.GDGASU)        -
+//*             LIMIT(10)                 -
+//*             NOEMPTY                   -
+//*             SCRATCH)
+//*  ALTER 'API12.GDGASU' OWNER(API12)
+//**
 //*
 //*---------------------------------------------------------------*
 //* STEP2 : Tri fichier ASSURES sur Matricule + Adresse          *
 //*---------------------------------------------------------------*
 //TRIASS   EXEC PGM=SORT
 //SYSOUT   DD SYSOUT=*
-//SORTIN   DD DSN=API12.SEQ.ASSURES,DISP=SHR
+//SORTIN   DD DSN=API12.SEQ.ASSURES,DISP=SHR,
+//            DCB=(RECFM=FB,LRECL=80,BLKSIZE=0)
 //SORTOUT  DD DSN=&&ASSUREST,
 //            DISP=(NEW,PASS,DELETE),
 //            SPACE=(TRK,(1,1))
@@ -68,7 +73,8 @@
 //*---------------------------------------------------------------*
 //TRIMVT   EXEC PGM=SORT
 //SYSOUT   DD SYSOUT=*
-//SORTIN   DD DSN=API12.SEQ.MVTS,DISP=SHR
+//SORTIN   DD DSN=API12.SEQ.MVTS,DISP=SHR,
+//            DCB=(RECFM=FB,LRECL=80,BLKSIZE=0)
 //SORTOUT  DD DSN=&&MVTST,
 //            DISP=(NEW,PASS,DELETE),
 //            SPACE=(TRK,(1,1))

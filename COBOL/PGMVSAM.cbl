@@ -1,8 +1,8 @@
        IDENTIFICATION DIVISION.
        PROGRAM-ID. PGMVSAM.
-     
+
       * ACCESSEUR VSAM - GESTION KSDS (ASSURES3) ET ESDS (FMVTSE)    *
-     
+
 
        ENVIRONMENT DIVISION.
        INPUT-OUTPUT SECTION.
@@ -57,10 +57,10 @@
       * Codes retour (conformes PDF page 17)
        01  WS-CODES-RETOUR.
            05 WS-RETOUR-OK         PIC 99 VALUE 00.
-           05 WS-RETOUR-EOF        PIC 99 VALUE 01.
-           05 WS-RETOUR-NOTFOUND   PIC 99 VALUE 02.
-           05 WS-RETOUR-DUPLICATE  PIC 99 VALUE 03.
-           05 WS-RETOUR-NOTOPEN    PIC 99 VALUE 04.
+           05 WS-RETOUR-EOF        PIC 99 VALUE 04.
+           05 WS-RETOUR-NOTFOUND   PIC 99 VALUE 01.
+           05 WS-RETOUR-DUPLICATE  PIC 99 VALUE 02.
+           05 WS-RETOUR-IOERROR    PIC 99 VALUE 03.
            05 WS-RETOUR-ERROR      PIC 99 VALUE 99.
 
        01  WS-FILE-STATUS          PIC XX.
@@ -73,7 +73,7 @@
            05 LS-CODE-FONCTION     PIC 99.
            05 LS-CODE-RETOUR       PIC 99.
            05 LS-ENREG             PIC X(80).
-           05 LS-FILLER            PIC X(20).
+           05 LS-FILLER            PIC X(28).
 
        PROCEDURE DIVISION USING LS-COM.
 
@@ -103,9 +103,9 @@
 
            GOBACK.
 
-     
+
       * OPEN - Ouverture fichier                                      *
-     
+
        OPEN-FILE.
            EVALUATE LS-NOM-FICHIER
                WHEN 'ASSURES3'
@@ -130,9 +130,9 @@
 
            PERFORM MAPPER-FILE-STATUS.
 
-     
+
       * CLOSE - Fermeture fichier                                     *
-     
+
        CLOSE-FILE.
            EVALUATE LS-NOM-FICHIER
                WHEN 'ASSURES3'
@@ -157,9 +157,9 @@
 
            PERFORM MAPPER-FILE-STATUS.
 
-     
+
       * READ - Lecture directe par clé (KSDS uniquement)              *
-     
+
        READ-FILE.
            IF LS-NOM-FICHIER = 'ASSURES3'
                MOVE LS-ENREG(1:6) TO FS-ASSURES-KEY
@@ -176,9 +176,9 @@
 
            PERFORM MAPPER-FILE-STATUS.
 
-     
+
       * REWRITE - Mise à jour enregistrement (KSDS uniquement)        *
-     
+
        REWRITE-FILE.
            IF LS-NOM-FICHIER = 'ASSURES3'
                MOVE LS-ENREG TO FS-ASSURES-REC
@@ -194,9 +194,9 @@
 
            PERFORM MAPPER-FILE-STATUS.
 
-     
+
       * DELETE - Suppression enregistrement (KSDS uniquement)         *
-     
+
        DELETE-FILE.
            IF LS-NOM-FICHIER = 'ASSURES3'
                MOVE LS-ENREG(1:6) TO FS-ASSURES-KEY
@@ -212,9 +212,9 @@
 
            PERFORM MAPPER-FILE-STATUS.
 
-     
+
       * WRITE - Création enregistrement (KSDS uniquement)             *
-     
+
        WRITE-FILE.
            IF LS-NOM-FICHIER = 'ASSURES3'
                MOVE LS-ENREG TO FS-ASSURES-REC
@@ -230,9 +230,9 @@
 
            PERFORM MAPPER-FILE-STATUS.
 
-     
+
       * START - Positionnement début fichier (KSDS uniquement)        *
-     
+
        START-FILE.
            IF LS-NOM-FICHIER = 'ASSURES3'
                MOVE LOW-VALUES TO FS-ASSURES-KEY
@@ -248,9 +248,9 @@
 
            PERFORM MAPPER-FILE-STATUS.
 
-     
+
       * READNEXT - Lecture séquentielle                               *
-     
+
        READNEXT-FILE.
            MOVE SPACES TO LS-ENREG
 
@@ -277,9 +277,9 @@
 
            PERFORM MAPPER-FILE-STATUS.
 
-     
+
       * MAPPER-FILE-STATUS - Conversion File-Status -> Code retour    *
-     
+
        MAPPER-FILE-STATUS.
            EVALUATE WS-FILE-STATUS
                WHEN '00'
@@ -290,8 +290,10 @@
                    MOVE WS-RETOUR-NOTFOUND TO LS-CODE-RETOUR
                WHEN '22'
                    MOVE WS-RETOUR-DUPLICATE TO LS-CODE-RETOUR
-               WHEN '90' THRU '99'
-                   MOVE WS-RETOUR-NOTOPEN TO LS-CODE-RETOUR
+               WHEN '11' THRU '49'
+                  MOVE WS-RETOUR-IOERROR TO LS-CODE-RETOUR
+              WHEN '90' THRU '99'
+                   MOVE WS-RETOUR-IOERROR TO LS-CODE-RETOUR
                WHEN OTHER
                    MOVE WS-RETOUR-ERROR TO LS-CODE-RETOUR
            END-EVALUATE.

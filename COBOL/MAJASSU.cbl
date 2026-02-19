@@ -1,9 +1,9 @@
        IDENTIFICATION DIVISION.
        PROGRAM-ID. MAJASSU.
-      
+
       * MISE A JOUR ASSURES - Programme Principal                    *
       * Traite les mouvements (C/M/S) sur le fichier ASSURES3        *
-     
+
        ENVIRONMENT DIVISION.
        INPUT-OUTPUT SECTION.
        FILE-CONTROL.
@@ -34,7 +34,7 @@
            05 WS-CODE-FONCTION     PIC 99.
            05 WS-CODE-RETOUR       PIC 99.
            05 WS-ENREG             PIC X(80).
-           05 WS-FILLER            PIC X(20).
+           05 WS-FILLER            PIC X(28).
 
       * Codes fonction PGMVSAM
        01  WS-CODES-FONCTION.
@@ -50,10 +50,10 @@
       * Codes retour PGMVSAM
        01  WS-CODES-RETOUR.
            05 WS-RET-OK            PIC 99 VALUE 00.
-           05 WS-RET-EOF           PIC 99 VALUE 01.
-           05 WS-RET-NOTFOUND      PIC 99 VALUE 02.
-           05 WS-RET-DUPLICATE     PIC 99 VALUE 03.
-           05 WS-RET-NOTOPEN       PIC 99 VALUE 04.
+           05 WS-RET-EOF           PIC 99 VALUE 04.
+           05 WS-RET-NOTFOUND      PIC 99 VALUE 01.
+           05 WS-RET-DUPLICATE     PIC 99 VALUE 02.
+           05 WS-RET-IOERROR       PIC 99 VALUE 03.
            05 WS-RET-ERROR         PIC 99 VALUE 99.
 
       * Indicateurs
@@ -80,17 +80,17 @@
        01  WS-LIBELLE-ERREUR       PIC X(60).
 
        PROCEDURE DIVISION.
-     
+
       * Programme principal                                           *
-      
+
        00000-DEBUT.
            PERFORM 10000-INIT
            PERFORM 20000-TRAITEMENT
            PERFORM 30000-FIN
            STOP RUN.
-  
+
       * Initialisation                                                *
-      
+
        10000-INIT.
       * Ouverture ASSURES3 via PGMVSAM
            MOVE 'ASSURES3' TO WS-NOM-FICHIER
@@ -122,9 +122,9 @@
            DISPLAY 'TRAITEMENT DE MISE A JOUR DES ASSURES'
            DISPLAY '================================================'
            .
-      
+
       * Traitement principal                                          *
-      
+
        20000-TRAITEMENT.
            PERFORM 21000-LIRE-PREMIER-MVT
 
@@ -135,9 +135,9 @@
 
            PERFORM 23000-AFFICHER-STATS
            .
-      
+
       * Lire premier mouvement                                        *
-      
+
        21000-LIRE-PREMIER-MVT.
            MOVE 'FMVTSE' TO WS-NOM-FICHIER
            MOVE WS-FUNC-READNEXT TO WS-CODE-FONCTION
@@ -156,9 +156,9 @@
                    STOP RUN
            END-EVALUATE
            .
-      
+
       * Lire mouvement suivant                                        *
-      
+
        21000-LIRE-MVT-SUIVANT.
            MOVE 'FMVTSE' TO WS-NOM-FICHIER
            MOVE WS-FUNC-READNEXT TO WS-CODE-FONCTION
@@ -176,9 +176,9 @@
                    STOP RUN
            END-EVALUATE
            .
-      
+
       * Traiter un mouvement                                          *
-      
+
        22000-TRAITER-MOUVEMENT.
       * Chercher l'assuré correspondant
            PERFORM 41000-CHERCHER-ASSURE
@@ -195,9 +195,9 @@
                    PERFORM 80000-ANO-CODE-INVALIDE
            END-EVALUATE
            .
-      
+
       * Chercher assuré dans ASSURES3                                 *
-      
+
        41000-CHERCHER-ASSURE.
            MOVE 'ASSURES3' TO WS-NOM-FICHIER
            MOVE WS-FUNC-READ TO WS-CODE-FONCTION
@@ -216,9 +216,9 @@
                    STOP RUN
            END-EVALUATE
            .
-      
+
       * Traiter création                                              *
-      
+
        43000-TRAITER-CREATION.
            IF WS-ASSURE-TROUVE = 'O'
                PERFORM 81000-ANO-CREAT-EXISTANT
@@ -235,9 +235,9 @@
                END-IF
            END-IF
            .
-      
+
       * Traiter modification                                          *
-      
+
        44000-TRAITER-MODIFICATION.
            IF WS-ASSURE-TROUVE = 'N'
                PERFORM 82000-ANO-MODIF-INEXIST
@@ -254,9 +254,9 @@
                END-IF
            END-IF
            .
-      
+
       * Traiter suppression                                           *
-      
+
        45000-TRAITER-SUPPRESSION.
            IF WS-ASSURE-TROUVE = 'N'
                PERFORM 83000-ANO-SUPPR-INEXIST
@@ -273,9 +273,9 @@
                END-IF
            END-IF
            .
-      
+
       * Anomalie - Code mouvement invalide                            *
-      
+
        80000-ANO-CODE-INVALIDE.
            MOVE '001' TO WS-CODE-ERREUR
            CALL 'PGMERR' USING WS-CODE-ERREUR WS-LIBELLE-ERREUR
@@ -291,9 +291,9 @@
            WRITE FS-ANO-REC FROM WS-LIGNE-ANO
            ADD 1 TO WS-CPT-ANOMALIES
            .
-      
+
       * Anomalie - Création sur existant                              *
-      
+
        81000-ANO-CREAT-EXISTANT.
            MOVE '002' TO WS-CODE-ERREUR
            CALL 'PGMERR' USING WS-CODE-ERREUR WS-LIBELLE-ERREUR
@@ -309,9 +309,9 @@
            WRITE FS-ANO-REC FROM WS-LIGNE-ANO
            ADD 1 TO WS-CPT-ANOMALIES
            .
-      
+
       * Anomalie - Modification sur inexistant                        *
-      
+
        82000-ANO-MODIF-INEXIST.
            MOVE '003' TO WS-CODE-ERREUR
            CALL 'PGMERR' USING WS-CODE-ERREUR WS-LIBELLE-ERREUR
@@ -327,9 +327,9 @@
            WRITE FS-ANO-REC FROM WS-LIGNE-ANO
            ADD 1 TO WS-CPT-ANOMALIES
            .
-      
+
       * Anomalie - Suppression sur inexistant                         *
-      
+
        83000-ANO-SUPPR-INEXIST.
            MOVE '004' TO WS-CODE-ERREUR
            CALL 'PGMERR' USING WS-CODE-ERREUR WS-LIBELLE-ERREUR
@@ -347,7 +347,7 @@
            .
 
       * Afficher statistiques                                         *
-      
+
        23000-AFFICHER-STATS.
            DISPLAY '================================================'
            DISPLAY 'STATISTIQUES'
@@ -359,9 +359,9 @@
            DISPLAY 'ANOMALIES            : ' WS-CPT-ANOMALIES
            DISPLAY '================================================'
            .
-      
+
       * Fin de traitement                                             *
-      
+
        30000-FIN.
       * Fermeture ASSURES3 via PGMVSAM
            MOVE 'ASSURES3' TO WS-NOM-FICHIER
