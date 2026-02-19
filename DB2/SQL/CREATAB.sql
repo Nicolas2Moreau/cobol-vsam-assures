@@ -38,11 +38,11 @@ CREATE TABLE API12.ASSURES
    PRIMARY KEY (MATASS));
 
 ------------------------------------------------------------------
--- STEP 3 : Index (cree automatiquement via PRIMARY KEY,
---          mais on peut en ajouter un explicite)
+-- STEP 3 : Index unique obligatoire pour la PRIMARY KEY
+--          En DB2 V8 z/OS, l'index n'est PAS cree automatiquement
 ------------------------------------------------------------------
--- CREATE UNIQUE INDEX API12.IXASSURES
---   ON API12.ASSURES (MATASS ASC);
+CREATE UNIQUE INDEX API12.IXASSURES
+  ON API12.ASSURES (MATASS ASC);
 
 ------------------------------------------------------------------
 -- Notes :
