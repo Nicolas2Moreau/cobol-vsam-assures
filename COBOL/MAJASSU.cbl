@@ -192,7 +192,7 @@
                WHEN 'S'
                    PERFORM 45000-TRAITER-SUPPRESSION
                WHEN OTHER
-                   PERFORM 80000-ANOMALIE-CODE-INVALIDE
+                   PERFORM 80000-ANO-CODE-INVALIDE
            END-EVALUATE
            .
       
@@ -221,7 +221,7 @@
       
        43000-TRAITER-CREATION.
            IF WS-ASSURE-TROUVE = 'O'
-               PERFORM 81000-ANOMALIE-CREATION-EXISTANT
+               PERFORM 81000-ANO-CREAT-EXISTANT
            ELSE
       * Créer nouvel assuré
                MOVE 'ASSURES3' TO WS-NOM-FICHIER
@@ -240,7 +240,7 @@
       
        44000-TRAITER-MODIFICATION.
            IF WS-ASSURE-TROUVE = 'N'
-               PERFORM 82000-ANOMALIE-MODIF-INEXISTANT
+               PERFORM 82000-ANO-MODIF-INEXIST
            ELSE
       * Mettre à jour l'assuré
                MOVE 'ASSURES3' TO WS-NOM-FICHIER
@@ -259,7 +259,7 @@
       
        45000-TRAITER-SUPPRESSION.
            IF WS-ASSURE-TROUVE = 'N'
-               PERFORM 83000-ANOMALIE-SUPPR-INEXISTANT
+               PERFORM 83000-ANO-SUPPR-INEXIST
            ELSE
       * Supprimer l'assuré
                MOVE 'ASSURES3' TO WS-NOM-FICHIER
@@ -276,7 +276,7 @@
       
       * Anomalie - Code mouvement invalide                            *
       
-       80000-ANOMALIE-CODE-INVALIDE.
+       80000-ANO-CODE-INVALIDE.
            MOVE '001' TO WS-CODE-ERREUR
            CALL 'PGMERR' USING WS-CODE-ERREUR WS-LIBELLE-ERREUR
 
@@ -294,7 +294,7 @@
       
       * Anomalie - Création sur existant                              *
       
-       81000-ANOMALIE-CREATION-EXISTANT.
+       81000-ANO-CREAT-EXISTANT.
            MOVE '002' TO WS-CODE-ERREUR
            CALL 'PGMERR' USING WS-CODE-ERREUR WS-LIBELLE-ERREUR
 
@@ -312,7 +312,7 @@
       
       * Anomalie - Modification sur inexistant                        *
       
-       82000-ANOMALIE-MODIF-INEXISTANT.
+       82000-ANO-MODIF-INEXIST.
            MOVE '003' TO WS-CODE-ERREUR
            CALL 'PGMERR' USING WS-CODE-ERREUR WS-LIBELLE-ERREUR
 
@@ -330,7 +330,7 @@
       
       * Anomalie - Suppression sur inexistant                         *
       
-       83000-ANOMALIE-SUPPR-INEXISTANT.
+       83000-ANO-SUPPR-INEXIST.
            MOVE '004' TO WS-CODE-ERREUR
            CALL 'PGMERR' USING WS-CODE-ERREUR WS-LIBELLE-ERREUR
 
