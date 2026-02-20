@@ -52,6 +52,7 @@
            05 WS-FUNC-WRITE        PIC 99 VALUE 06.
            05 WS-FUNC-START        PIC 99 VALUE 07.
            05 WS-FUNC-READNEXT     PIC 99 VALUE 08.
+           05 WS-FUNC-TRUNCATE     PIC 99 VALUE 09.
 
       * Zone enregistrement en format DISPLAY (miroir de WASSURE)
        01  WS-ENREG-DISP.
@@ -99,6 +100,8 @@
                    PERFORM FUNC-START
                WHEN WS-FUNC-READNEXT
                    PERFORM FUNC-READNEXT
+               WHEN WS-FUNC-TRUNCATE
+                   PERFORM FUNC-TRUNCATE
                WHEN OTHER
                    MOVE WS-RETOUR-ERROR TO LS-CODE-RETOUR
            END-EVALUATE
@@ -211,6 +214,16 @@
            PERFORM MAPPER-FETCH
            IF LS-CODE-RETOUR = WS-RETOUR-OK
                PERFORM MOVE-WS-TO-LS.
+
+      *---------------------------------------------------------------*
+      * FUNC-TRUNCATE (09) : DELETE FROM ASSURES sans WHERE          *
+      *---------------------------------------------------------------*
+       FUNC-TRUNCATE.
+           EXEC SQL
+               DELETE FROM ASSURES
+           END-EXEC
+           MOVE SQLCODE TO WS-SQLCODE
+           PERFORM MAPPER-WRITE.
 
       *---------------------------------------------------------------*
       * MOVE-LS-TO-WS : LS-ENREG (DISPLAY) -> DCLGEN (COMP-3/COMP)  *

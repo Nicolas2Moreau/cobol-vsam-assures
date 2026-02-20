@@ -26,6 +26,15 @@
 //STEPLNK.SYSLMOD  DD DSN=&SYSUID..COB.LOAD(&NOMPGM),DISP=SHR
 //*
 //*---------------------------------------------------------------*
+//* STEP1b : Compilation COBOL standard KSTODB2 (pas de SQL)    *
+//*---------------------------------------------------------------*
+//         SET NOMPGM=KSTODB2
+//COMPCOB  EXEC COMPCOB
+//STEPCOB.SYSLIB   DD DSN=&SYSUID..COB.CPY,DISP=SHR
+//STEPCOB.SYSIN    DD DSN=&SYSUID..COB.SRC(&NOMPGM),DISP=SHR
+//STEPLNK.SYSLMOD  DD DSN=&SYSUID..COB.LOAD(&NOMPGM),DISP=SHR
+//*
+//*---------------------------------------------------------------*
 //* STEP2 : BIND - Liaison DBRM -> Plan DB2                      *
 //*---------------------------------------------------------------*
 //BIND     EXEC PGM=IKJEFT01,COND=(4,LT)
