@@ -36,7 +36,8 @@ PARM='PGMDB2'   →  MAJASSU  →  PGMDB2   →  TABLE DB2 API12.ASSURES
 ### JCL
 | Fichier | Rôle |
 |---------|------|
-| `JCL/JCREVSAM.jcl` | Init VSAM + GDG (DELETE FORCE + DEFINE + ALTER OWNER) |
+| `JCL/JCREGDG.jcl` | Création base GDG — **une seule fois** (DELETE FORCE + DEFINE + ALTER OWNER) |
+| `JCL/JCREVSAM.jcl` | Init VSAM : charge KSDS et ESDS depuis SEQ (prérequis : GDG existe via JCREGDG) |
 | `JCL/JCOMPDB2.jcl` | Compile PGMDB2 (COMPDB2) + compile KSTODB2 (COMPCOB) + BIND |
 | `JCL/JKSDB2.jcl` | Sync KSDS → table DB2 (REPRO + KSTODB2) |
 | `JCL/JMAJMV2.jcl` | Run V2 avec accesseur VSAM — `PARM='PGMVSAM'` |
@@ -49,11 +50,12 @@ PARM='PGMDB2'   →  MAJASSU  →  PGMDB2   →  TABLE DB2 API12.ASSURES
 ### 1. Initialisation unique (à faire une seule fois)
 
 ```
-[1] JCREVSAM    → Crée/réinitialise VSAM (KSDS, ESDS, GDG)
-[2] SPUFI       → Exécuter CREATAB.sql  (CREATE TABLE + INDEX)
-[3] DCLGEN      → Générer DCLASSU dans API12.COB.CPY
-[4] JCOMPDB2    → Compiler PGMDB2 + KSTODB2 + BIND plan PGMDB2
-[5] JKSDB2      → Charger table DB2 depuis état actuel du KSDS
+[1] JCREGDG     → Crée la base GDG API12.GDGASU (une seule fois !)
+[2] JCREVSAM    → Crée/charge KSDS et ESDS depuis les SEQ de référence
+[3] SPUFI       → Exécuter CREATAB.sql  (CREATE TABLE + INDEX)
+[4] DCLGEN      → Générer DCLASSU dans API12.COB.CPY
+[5] JCOMPDB2    → Compiler PGMDB2 + MAJASSV2 + KSTODB2 + BIND
+[6] JKSDB2      → Charger table DB2 depuis état actuel du KSDS
 ```
 
 ### 2. Exécution courante (rejouer avec un nouveau fichier MVTS)
@@ -117,6 +119,19 @@ JKSDB2   → Vide la table DB2 + recharge depuis le KSDS courant
 
 > Le `QUALIFIER(API12)` résout les noms de table non qualifiés :
 > `ASSURES` → `API12.ASSURES`
+
+---
+
+## Warnings connus à la compilation (CC=4 normal)
+
+| Message | Step | Explication |
+|---------|------|-------------|
+| `DSNH204I W` — UNDECLARED TABLE ASSURES | COMPDB2/STEPDB2 | Le précompilateur ne rapproche pas `API12.ASSURES` (nom qualifié dans DCLASSU) avec `ASSURES` (non qualifié dans le SQL). Les host variables sont bien définies, la compilation réussit. Cosmétique. |
+| `DSNH088I W` — WILL DELETE AN ENTIRE TABLE | COMPDB2/STEPDB2 | Warning automatique sur `DELETE FROM ASSURES` sans WHERE (fonction 09 TRUNCATE). Attendu et volontaire. |
+| `DSNH050I I` — WARNINGS SUPPRESSED DUE TO LACK OF TABLE DECLARATIONS | COMPDB2/STEPDB2 | Conséquence du DSNH204I ci-dessus. Informatif uniquement. |
+| `IEF686I` — DDNAME NOT RESOLVED | COMPMAJ / COMPKST | Warning de chaînage DDNAME dans la procédure cataloguée COMPCOB. Lié à la procédure, pas à notre code. |
+
+> CC=4 sur JCOMPDB2 est **normal et attendu**. Tous les programmes sont compilés et linkés correctement.
 
 ---
 

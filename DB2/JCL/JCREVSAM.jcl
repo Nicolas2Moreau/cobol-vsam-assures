@@ -6,31 +6,16 @@
 //             NOTIFY=&SYSUID,
 //             TIME=(0,10)
 //*---------------------------------------------------------------*
-//* INITIALISATION COMPLETE : CREATION ET CHARGEMENT VSAM        *
-//* STEP1 : Definition base GDG pour ETATANO                     *
-//* STEP2 : Tri ASSURES → fichier temporaire &&ASSUREST          *
-//* STEP3 : Creation KSDS ASSURES depuis &&ASSUREST              *
-//* STEP4 : Tri MVTS → fichier temporaire &&MVTST                *
-//* STEP5 : Creation ESDS FMVTSE depuis &&MVTST                  *
+//* INITIALISATION VSAM : CREATION ET CHARGEMENT                *
+//* Prerequis : base GDG API12.GDGASU deja creee via JCREGDG    *
+//* STEP1 : Tri ASSURES → fichier temporaire &&ASSUREST          *
+//* STEP2 : Creation KSDS ASSURES depuis &&ASSUREST              *
+//* STEP3 : Tri MVTS → fichier temporaire &&MVTST                *
+//* STEP4 : Creation ESDS FMVTSE depuis &&MVTST                  *
 //*---------------------------------------------------------------*
 //*
 //*---------------------------------------------------------------*
-//* STEP1 : Definition base GDG pour ETATANO (reset si existant) *
-//*---------------------------------------------------------------*
-//DEFGDG   EXEC PGM=IDCAMS
-//SYSPRINT DD SYSOUT=*
-//SYSIN    DD *
-  DELETE (API12.GDGASU) GDG FORCE
-  IF LASTCC LE 8 THEN SET MAXCC = 0
-  DEFINE GDG(NAME(API12.GDGASU)        -
-             LIMIT(10)                 -
-             NOEMPTY                   -
-             SCRATCH)
-  ALTER 'API12.GDGASU' OWNER(API12)
-/*
-//*
-//*---------------------------------------------------------------*
-//* STEP2 : Tri fichier ASSURES sur Matricule + Adresse          *
+//* STEP1 : Tri fichier ASSURES sur Matricule + Adresse          *
 //*---------------------------------------------------------------*
 //TRIASS   EXEC PGM=SORT
 //SYSOUT   DD SYSOUT=*
@@ -43,7 +28,7 @@
 /*
 //*
 //*---------------------------------------------------------------*
-//* STEP3 : Creation KSDS ASSURES depuis &&ASSUREST              *
+//* STEP2 : Creation KSDS ASSURES depuis &&ASSUREST              *
 //*---------------------------------------------------------------*
 //CKSDS    EXEC PGM=IDCAMS
 //SYSPRINT DD SYSOUT=*
@@ -65,7 +50,7 @@
 /*
 //*
 //*---------------------------------------------------------------*
-//* STEP4 : Tri fichier MVTS sur Matricule + Code mouvement      *
+//* STEP3 : Tri fichier MVTS sur Matricule + Code mouvement      *
 //*---------------------------------------------------------------*
 //TRIMVT   EXEC PGM=SORT
 //SYSOUT   DD SYSOUT=*
@@ -78,7 +63,7 @@
 /*
 //*
 //*---------------------------------------------------------------*
-//* STEP5 : Creation ESDS FMVTSE depuis &&MVTST                  *
+//* STEP4 : Creation ESDS FMVTSE depuis &&MVTST                  *
 //*---------------------------------------------------------------*
 //CESDS    EXEC PGM=IDCAMS
 //SYSPRINT DD SYSOUT=*

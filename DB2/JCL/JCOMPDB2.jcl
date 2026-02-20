@@ -28,9 +28,9 @@
 //STEPLNK.SYSLMOD  DD DSN=&SYSUID..COB.LOAD(&NOMPGM),DISP=SHR
 //*
 //*---------------------------------------------------------------*
-//* STEP1b : Compilation COBOL standard MAJASSU V2 (pas de SQL) *
+//* STEP1b : Compilation COBOL standard MAJASSV2 (pas de SQL)   *
 //*---------------------------------------------------------------*
-//         SET NOMPGM=MAJASSU
+//         SET NOMPGM=MAJASSV2
 //COMPMAJ  EXEC COMPCOB
 //STEPCOB.SYSLIB   DD DSN=&SYSUID..COB.CPY,DISP=SHR
 //STEPCOB.SYSIN    DD DSN=&SYSUID..COB.SRC(&NOMPGM),DISP=SHR

@@ -1,4 +1,4 @@
-//API12V   JOB (ACCT#),'RELOAD MVTS AND RUN V2',
+//API12V   JOB (ACCT#),'MAJ MVTS V2',
 //             MSGCLASS=H,
 //             CLASS=A,
 //             REGION=4M,
@@ -49,7 +49,7 @@
 //*         Accesseur VSAM selectionne via PARM JCL             *
 //*         Resultat identique a JMAJMVT (version statique)     *
 //*---------------------------------------------------------------*
-//EXECMAJ  EXEC PGM=MAJASSU,PARM='PGMVSAM',COND=(4,LT)
+//EXECMAJ  EXEC PGM=MAJASSV2,PARM='PGMVSAM',COND=(4,LT)
 //STEPLIB  DD DSN=&SYSUID..COB.LOAD,DISP=SHR
 //*
 //SYSPRINT DD SYSOUT=*

@@ -36,6 +36,9 @@
            05 WS-ENREG                PIC X(80).
            05 WS-FILLER               PIC X(28).
 
+      * Nom programme appele dynamiquement
+       01  WS-NOM-PGMDB2           PIC X(8) VALUE 'PGMDB2'.
+
       * Codes fonction
        01  WS-CODES-FONCTION.
            05 WS-FUNC-INSERT          PIC 99 VALUE 06.
@@ -75,7 +78,7 @@
       *---------------------------------------------------------------*
        20000-TRUNCATE.
            MOVE WS-FUNC-TRUNCATE TO WS-CODE-FONCTION
-           CALL 'PGMDB2' USING WS-COM
+           CALL WS-NOM-PGMDB2 USING WS-COM
            IF WS-CODE-RETOUR = WS-RET-OK
                DISPLAY 'TABLE ASSURES VIDEE AVEC SUCCES'
            ELSE
@@ -94,7 +97,7 @@
            ELSE
                ADD 1 TO WS-NB-LUS
                MOVE WS-FUNC-INSERT TO WS-CODE-FONCTION
-               CALL 'PGMDB2' USING WS-COM
+               CALL WS-NOM-PGMDB2 USING WS-COM
                IF WS-CODE-RETOUR = WS-RET-OK
                    ADD 1 TO WS-NB-INSERTS
                ELSE
