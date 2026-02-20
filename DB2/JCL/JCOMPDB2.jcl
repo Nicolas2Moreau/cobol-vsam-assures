@@ -9,9 +9,11 @@
 //*
 //         SET SYSUID=API12
 //*---------------------------------------------------------------*
-//* JCOMPDB2 - Compilation PGMDB2 (Accesseur DB2)               *
-//* STEP1 : Precompilation DB2 + Compilation COBOL + Link-edit   *
-//* STEP2 : BIND du DBRM dans le plan DB2                        *
+//* JCOMPDB2 - Compilation tous programmes V2                   *
+//* STEP1  : Precompilation DB2 + Compilation + Link PGMDB2      *
+//* STEP1b : Compilation COBOL + Link MAJASSU V2                 *
+//* STEP1c : Compilation COBOL + Link KSTODB2                    *
+//* STEP2  : BIND du DBRM PGMDB2 dans le plan DB2               *
 //*---------------------------------------------------------------*
 //*
 //*---------------------------------------------------------------*
@@ -26,10 +28,19 @@
 //STEPLNK.SYSLMOD  DD DSN=&SYSUID..COB.LOAD(&NOMPGM),DISP=SHR
 //*
 //*---------------------------------------------------------------*
-//* STEP1b : Compilation COBOL standard KSTODB2 (pas de SQL)    *
+//* STEP1b : Compilation COBOL standard MAJASSU V2 (pas de SQL) *
+//*---------------------------------------------------------------*
+//         SET NOMPGM=MAJASSU
+//COMPMAJ  EXEC COMPCOB
+//STEPCOB.SYSLIB   DD DSN=&SYSUID..COB.CPY,DISP=SHR
+//STEPCOB.SYSIN    DD DSN=&SYSUID..COB.SRC(&NOMPGM),DISP=SHR
+//STEPLNK.SYSLMOD  DD DSN=&SYSUID..COB.LOAD(&NOMPGM),DISP=SHR
+//*
+//*---------------------------------------------------------------*
+//* STEP1c : Compilation COBOL standard KSTODB2 (pas de SQL)    *
 //*---------------------------------------------------------------*
 //         SET NOMPGM=KSTODB2
-//COMPCOB  EXEC COMPCOB
+//COMPKST  EXEC COMPCOB
 //STEPCOB.SYSLIB   DD DSN=&SYSUID..COB.CPY,DISP=SHR
 //STEPCOB.SYSIN    DD DSN=&SYSUID..COB.SRC(&NOMPGM),DISP=SHR
 //STEPLNK.SYSLMOD  DD DSN=&SYSUID..COB.LOAD(&NOMPGM),DISP=SHR
