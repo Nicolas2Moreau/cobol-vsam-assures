@@ -391,6 +391,76 @@ versions. Le comportement décrit ci-dessus est donc identique en V1 et V2.
 
 ---
 
+## PGMERR — Le gestionnaire de messages
+
+### Rôle
+
+PGMERR est un sous-programme autonome dont le seul travail est de transformer
+un **code numérique à 3 chiffres** en un **libellé de 60 caractères**, utilisé
+par MAJASSU pour rédiger les lignes du fichier d'anomalies ETATANO.
+
+### Comment ça fonctionne
+
+`MESSAGES.cpy` définit une zone fixe de **30 × 60 = 1 800 octets** initialisée
+en dur dans le working-storage. PGMERR la redéfinit aussitôt avec un `OCCURS 30`
+pour pouvoir la parcourir par index — même bloc mémoire, deux lectures différentes.
+
+```
+Appel depuis MAJASSU :
+
+  MOVE '002' TO WS-CODE-ERREUR
+  CALL 'PGMERR' USING WS-CODE-ERREUR    ← code 3 chars en entrée
+                      WS-LIBELLE-ERREUR ← libellé 60 chars en sortie
+
+PGMERR parcourt la table (recherche séquentielle, 1 à 30) :
+  → compare les 3 premiers chars de chaque entrée au code reçu
+  → premier trouvé : retourne le libellé complet
+  → aucun trouvé   : retourne 'ERREUR INCONNUE - CODE : XXX'
+
+MAJASSU construit ensuite la ligne anomalie :
+  STRING 'ERREUR : ' '002' ' - ' WS-LIBELLE-ERREUR INTO WS-ANO-TEXTE
+  WRITE  WS-LIGNE-ANO → ETATANO
+```
+
+### Ce que MAJASSU utilise réellement
+
+Sur 30 messages définis, **4 seulement sont appelés via PGMERR** — les anomalies métier :
+
+| Code | Libellé | Déclencheur |
+|------|---------|-------------|
+| 001 | CODE MOUVEMENT INVALIDE | F-CODE ≠ C / M / S |
+| 002 | CREATION SUR ENREGISTREMENT EXISTANT | WRITE sur clé existante |
+| 003 | MISE A JOUR SUR ENREGISTREMENT INEXISTANT | REWRITE sur clé absente |
+| 004 | SUPPRESSION SUR ENREGISTREMENT INEXISTANT | DELETE sur clé absente |
+
+### Pourquoi 26 messages inutilisés ?
+
+La table a été conçue pour deux usages :
+
+- **Anomalies (001–004)** → via PGMERR → ETATANO — **implémenté**
+- **Statistiques (005–018)** → libellés des compteurs (nb mouvements lus, nb créations...) — **abandonné**
+
+Dans l'implémentation finale, les statistiques sont affichées avec des `DISPLAY`
+écrits en dur dans `23000-AFFICHER-STATS`. PGMERR a été court-circuité pour tout
+ce qui n'est pas une anomalie. Les messages 005–018 sont définis mais orphelins :
+**une évolution de conception abandonnée à mi-chemin.**
+
+### Bug latent sur les codes 012–015
+
+Ces quatre entrées ont 6 espaces avant leur code dans la table :
+
+```
+'      012 - ANOMALIE DE CODE MOUVEMENT'   ← position 1:3 = '   ' (espaces)
+```
+
+Si MAJASSU appelait PGMERR avec `'012'`, la recherche comparerait des espaces
+au lieu de `'012'` → jamais trouvé → retournerait `'ERREUR INCONNUE'`.
+
+**Impact fonctionnel réel : zéro.** MAJASSU ne les appelle pas.
+C'est un bug de données dans la table — sans effet en production.
+
+---
+
 ## Programmes du projet
 
 | Programme  | Version | Rôle                                                  |
