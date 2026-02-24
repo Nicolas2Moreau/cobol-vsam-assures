@@ -1,8 +1,8 @@
 # Dossier de configuration Claude Code
 .claude/
 
-# Documentation (ne pas versionner)
-DOCS/
+# Environnement de test Windows (branche gnucobol uniquement)
+windows-test/
 
 # Fichiers Windows
 Thumbs.db
