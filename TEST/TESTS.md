@@ -120,3 +120,41 @@ au VSAM ni à DB2.
 **Outillage possible :** COBOL Check ou zUnit (IBM) — frameworks de test
 unitaire COBOL, non disponibles dans l'environnement actuel mais standard
 en contexte professionnel mainframe.
+
+---
+
+## Perspectives de modernisation — Proposition V3
+
+Dans les grandes entreprises aujourd'hui, le COBOL mainframe se modernise
+selon deux grandes approches.
+
+La première est **l'étranglement progressif** (*Strangler Fig Pattern*) : on
+n'arrache pas le COBOL, on l'entoure progressivement de services modernes
+(APIs REST, microservices) qui absorbent chaque fonction métier une par une,
+jusqu'à ce que le mainframe ne soit plus qu'un résidu. C'est la voie d'IBM,
+Accenture, et la plupart des grandes banques — prudente, longue, coûteuse.
+
+La seconde approche, plus récente, consiste à **ne pas toucher au COBOL mais
+à ses données** : exposer les fichiers VSAM et tables DB2 via des pipelines
+modernes, les rendre consommables proprement par des LLM ou outils d'analyse.
+L'IA ne remplace pas le COBOL — elle se branche dessus et l'augmente.
+
+**Dans notre contexte, une V3 cohérente ressemblerait à :**
+
+Un workflow GitHub Actions qui se déclenche à chaque push sur `dev` ou `main` :
+
+1. **Compilation GnuCOBOL automatique** — valide que le code source reste
+   compilable hors mainframe à tout moment
+2. **Lancement du golden file test** — garantit qu'aucune modification n'a
+   cassé le comportement de référence
+3. **Rapport de compatibilité** — si ça passe, le code est garanti testable
+   sans mainframe
+
+Le tout encadré par des **règles strictes pour les IA** (dans `CLAUDE.md` ou
+équivalent) : colonnes COBOL respectées, pas de syntaxe spécifique z/OS dans
+le code partagé, conventions de nommage imposées. Cela garantit que les
+modifications générées ou assistées par IA restent automatiquement compatibles
+GnuCOBOL — et donc testables en CI sans aucune infrastructure mainframe.
+
+L'idée : le mainframe reste la référence d'exécution, GnuCOBOL devient le
+**filet de sécurité automatisé** à chaque modification.
