@@ -94,3 +94,29 @@ T12  CLOSE ASSURES3             RC=00 ATT=00 OK
 ```
 
 Si les deux JCL donnent 12 OK / 0 KO, les deux accesseurs sont isométriques.
+
+---
+
+## Proposition V3 — Tests unitaires
+
+Les tests actuels (TSTASSU) sont des **tests d'intégration** : ils nécessitent
+un vrai cluster VSAM et une vraie table DB2 pour tourner.
+
+Une V3 pourrait ajouter de vrais **tests unitaires** qui tournent sans
+aucune ressource externe :
+
+**1. Tester les mappers isolément**
+Les paragraphes `MAPPER-FILE-STATUS` (V1) et `MAPPER-READ/WRITE/FETCH/OPEN`
+(V2) sont de la logique pure — pas de fichier, pas de SQL. Un programme
+dédié pourrait injecter directement un file-status ou un SQLCODE et vérifier
+le code retour produit, sans jamais ouvrir un fichier.
+
+**2. Tester MAJASSV2 avec un accesseur stub**
+Remplacer PGMVSAM/PGMDB2 par un **faux accesseur** (stub) qui retourne
+des codes retour prédéfinis. On pourrait alors tester toute la logique
+métier de MAJASSV2 (gestion C/M/S, compteurs, anomalies) sans toucher
+au VSAM ni à DB2.
+
+**Outillage possible :** COBOL Check ou zUnit (IBM) — frameworks de test
+unitaire COBOL, non disponibles dans l'environnement actuel mais standard
+en contexte professionnel mainframe.
