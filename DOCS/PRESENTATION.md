@@ -44,6 +44,86 @@ Offset  Long  Champ      Type COBOL
 | 04   | EOF             | fin de fichier / fin de curseur          |
 | 99   | ERROR           | code fonction inconnu ou erreur fatale   |
 
+### Couche de traduction — les Mappers
+
+Chaque accesseur reçoit des codes d'erreur natifs très différents selon la
+technologie sous-jacente (VSAM ou DB2). Le rôle des **mappers** est de les
+réduire aux 6 codes retour de l'interface, pour que l'appelant n'ait jamais
+à se préoccuper de ce qui se passe en dessous.
+
+**En V1 — PGMVSAM : un seul paragraphe `MAPPER-FILE-STATUS`**
+
+VSAM retourne un file-status sur 2 caractères après chaque opération.
+Un unique paragraphe traduit toutes les valeurs possibles :
+
+```
+File-status VSAM  →  Code retour interface
+─────────────────────────────────────────
+'00'              →  00  OK
+'10'              →  04  EOF      (fin de fichier)
+'22'              →  02  DUPLICATE (clé déjà existante)
+'23'              →  01  NOTFOUND  (clé absente)
+'11' à '49'       →  03  IOERROR   ('35' fichier inexistant tombe ici)
+'90' à '99'       →  03  IOERROR
+autres            →  99  ERROR
+```
+
+**En V2 — PGMDB2 : 4 mappers distincts selon l'opération**
+
+DB2 retourne un SQLCODE (entier signé). Le même SQLCODE peut signifier des
+choses différentes selon ce qu'on fait — par exemple `+100` veut dire
+"pas trouvé" sur un READ, mais "fin de curseur" sur un FETCH. Il faut donc
+4 mappers séparés :
+
+```
+Mapper          Utilisé par          Traductions clés
+──────────────────────────────────────────────────────────────────
+MAPPER-READ     READ (03), DELETE(05)  0→00  +100→01  -501→03
+MAPPER-WRITE    WRITE(06), REWRITE(04) 0→00  -803/-811→02  -501→03
+                TRUNCATE(09)
+MAPPER-FETCH    READNEXT (08)          0→00  +100→04  -501→03
+MAPPER-OPEN     STARTBR (07)           0→00  autres→99
+```
+
+> **SQLCODE -501** : DB2 signale qu'on opère sur un curseur qui n'a pas été
+> ouvert. En pratique : appel de READNEXT (f08) sans STARTBR (f07) préalable,
+> ou CLOSE (f02) alors que le curseur n'est pas actif. Traduit en RC=03 (IOERROR).
+
+**D'où viennent ces SQLCODE ? La SQLCA.**
+
+DB2 maintient une zone mémoire standardisée appelée **SQLCA** (SQL Communication
+Area), injectée dans le working-storage via :
+
+```cobol
+EXEC SQL
+    INCLUDE SQLCA
+END-EXEC.
+```
+
+Après chaque instruction `EXEC SQL ... END-EXEC`, DB2 remplit automatiquement
+cette zone. Le champ clé est `SQLCODE`. Dans PGMDB2, on le récupère
+systématiquement après chaque appel SQL :
+
+```cobol
+MOVE SQLCODE TO WS-SQLCODE   ← copie locale (PIC S9(9) COMP)
+PERFORM MAPPER-xxx
+```
+
+La copie dans `WS-SQLCODE` protège la valeur d'un éventuel écrasement par
+une instruction SQL implicite. La chaîne complète est donc :
+
+```
+DB2 exécute le SQL
+  → remplit SQLCA.SQLCODE automatiquement
+    → MOVE SQLCODE TO WS-SQLCODE
+      → MAPPER-xxx traduit en RC 00/01/02/03/04/99
+        → l'appelant ne voit que ces 6 codes
+```
+
+La SQLCA contient aussi d'autres champs (`SQLERRM`, `SQLSTATE`, `SQLERRD`...)
+qui donnent des détails sur l'erreur, mais dans notre code le SQLCODE seul
+suffit pour alimenter les mappers.
+
 ---
 
 ## Fonctions par version
