@@ -1,0 +1,58 @@
+name: Strip Comments for Production
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  strip-comments:
+    name: Strip COBOL & JCL comments
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Strip comments from COBOL, copybooks and JCL
+        run: |
+          mkdir -p prod
+
+          echo "=== COBOL (.cbl) — remove lines with * in column 7 ==="
+          for f in $(find COBOL DB2/COBOL TEST/COBOL -name "*.cbl" 2>/dev/null | sort); do
+            mkdir -p "prod/$(dirname "$f")"
+            BEFORE=$(wc -l < "$f")
+            sed '/^.\{6\}\*/d' "$f" > "prod/$f"
+            AFTER=$(wc -l < "prod/$f")
+            echo "  $f : $((BEFORE - AFTER)) comment lines removed"
+          done
+
+          echo "=== Copybooks (.cpy) — same rule ==="
+          for f in $(find COPY DB2/COPY -name "*.cpy" 2>/dev/null | sort); do
+            mkdir -p "prod/$(dirname "$f")"
+            BEFORE=$(wc -l < "$f")
+            sed '/^.\{6\}\*/d' "$f" > "prod/$f"
+            AFTER=$(wc -l < "prod/$f")
+            echo "  $f : $((BEFORE - AFTER)) comment lines removed"
+          done
+
+          echo "=== JCL (.jcl) — remove //* lines ==="
+          for f in $(find JCL DB2/JCL TEST/JCL -name "*.jcl" 2>/dev/null | sort); do
+            mkdir -p "prod/$(dirname "$f")"
+            BEFORE=$(wc -l < "$f")
+            sed '/^\/\/\*/d' "$f" > "prod/$f"
+            AFTER=$(wc -l < "prod/$f")
+            echo "  $f : $((BEFORE - AFTER)) comment lines removed"
+          done
+
+          echo ""
+          echo "=== Files ready in prod/ ==="
+          find prod/ -type f | sort
+
+      - name: Upload stripped artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: prod-stripped
+          path: prod/
+          retention-days: 90

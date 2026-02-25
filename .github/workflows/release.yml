@@ -1,0 +1,75 @@
+name: Release — Production (stripped)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Strip comments and publish release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set release tag (date)
+        id: tag
+        run: echo "tag=$(date +%Y-%m-%d)" >> $GITHUB_OUTPUT
+
+      - name: Strip COBOL & JCL comments
+        run: |
+          mkdir -p prod
+
+          echo "=== COBOL (.cbl) ==="
+          for f in $(find COBOL DB2/COBOL TEST/COBOL -name "*.cbl" 2>/dev/null | sort); do
+            mkdir -p "prod/$(dirname "$f")"
+            BEFORE=$(wc -l < "$f")
+            sed '/^.\{6\}\*/d' "$f" > "prod/$f"
+            AFTER=$(wc -l < "prod/$f")
+            echo "  $f : $((BEFORE - AFTER)) lines removed"
+          done
+
+          echo "=== Copybooks (.cpy) ==="
+          for f in $(find COPY DB2/COPY -name "*.cpy" 2>/dev/null | sort); do
+            mkdir -p "prod/$(dirname "$f")"
+            BEFORE=$(wc -l < "$f")
+            sed '/^.\{6\}\*/d' "$f" > "prod/$f"
+            AFTER=$(wc -l < "prod/$f")
+            echo "  $f : $((BEFORE - AFTER)) lines removed"
+          done
+
+          echo "=== JCL (.jcl) ==="
+          for f in $(find JCL DB2/JCL TEST/JCL -name "*.jcl" 2>/dev/null | sort); do
+            mkdir -p "prod/$(dirname "$f")"
+            BEFORE=$(wc -l < "$f")
+            sed '/^\/\/\*/d' "$f" > "prod/$f"
+            AFTER=$(wc -l < "prod/$f")
+            echo "  $f : $((BEFORE - AFTER)) lines removed"
+          done
+
+      - name: Zip stripped sources
+        run: |
+          cd prod
+          zip -r ../cobol-vsam-assures-${{ steps.tag.outputs.tag }}.zip .
+          cd ..
+          echo "Archive: cobol-vsam-assures-${{ steps.tag.outputs.tag }}.zip"
+          ls -lh cobol-vsam-assures-*.zip
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: "Production ${{ steps.tag.outputs.tag }}"
+          body: |
+            Production build — all COBOL, copybook and JCL sources stripped of comments.
+
+            **Stripping rules applied:**
+            - `.cbl` / `.cpy` : lines with `*` in column 7 removed (COBOL fixed-format indicator)
+            - `.jcl` : lines starting with `//*` removed
+
+            **Included directories:** `COBOL/`, `COPY/`, `DB2/COBOL/`, `DB2/COPY/`, `JCL/`, `DB2/JCL/`, `TEST/COBOL/`, `TEST/JCL/`
+          files: cobol-vsam-assures-${{ steps.tag.outputs.tag }}.zip
+          make_latest: true
