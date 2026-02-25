@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schémas Mermaid - Présentation COBOL VSAM/DB2</title>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            securityLevel: 'loose'
+        });
+    </script>
+    <style>
+        /* ============================================
+           VARIABLES DE COULEURS - MODIFIABLES ICI
+           ============================================ */
+        :root {
+            /* Couleurs principales */
+            --color-primary: #4472C4;
+            --color-secondary: #70AD47;
+            --color-accent: #E74C3C;
+            --color-warning: #F39C12;
+            --color-success: #27AE60;
+            --color-info: #3498DB;
+            --color-purple: #9B59B6;
+            --color-orange: #ED7D31;
+            --color-yellow: #FFC000;
+            
+            /* Couleurs interface */
+            --bg-main: #f5f7fa;
+            --bg-card: #ffffff;
+            --border-color: #e1e8ed;
+            --text-dark: #2c3e50;
+            --text-light: #7f8c8d;
+            
+            /* Ombres */
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 8px rgba(0,0,0,0.12);
+            --shadow-lg: 0 8px 16px rgba(0,0,0,0.15);
+        }
+        
+        /* ============================================
+           STYLES GÉNÉRAUX
+           ============================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-main);
+            color: var(--text-dark);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        /* ============================================
+           HEADER
+           ============================================ */
+        header {
+            background: linear-gradient(135deg, var(--color-primary), var(--color-info));
+            color: white;
+            padding: 40px;
+            border-radius: 12px;
+            margin-bottom: 40px;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.95;
+        }
+        
+        /* ============================================
+           NAVIGATION / TABLE DES MATIÈRES
+           ============================================ */
+        .toc {
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 40px;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .toc h2 {
+            color: var(--color-primary);
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+        
+        .toc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        
+        .toc-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            background: var(--bg-main);
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-dark);
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--color-primary);
+        }
+        
+        .toc-item:hover {
+            transform: translateX(5px);
+            box-shadow: var(--shadow-sm);
+            background: white;
+        }
+        
+        .toc-number {
+            background: var(--color-primary);
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        
+        .toc-title {
+            font-weight: 500;
+        }
+        
+        /* ============================================
+           SCHÉMA SECTIONS
+           ============================================ */
+        .schema-section {
+            background: var(--bg-card);
+            padding: 40px;
+            border-radius: 12px;
+            margin-bottom: 40px;
+            box-shadow: var(--shadow-md);
+            scroll-margin-top: 20px;
+        }
+        
+        .schema-header {
+            margin-bottom: 30px;
+            border-bottom: 3px solid var(--color-primary);
+            padding-bottom: 20px;
+        }
+        
+        .schema-number {
+            display: inline-block;
+            background: var(--color-primary);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .schema-header h2 {
+            font-size: 2rem;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+        }
+        
+        .schema-description {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+        
+        .schema-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            border: 2px solid var(--border-color);
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+        
+        .mermaid {
+            text-align: center;
+            min-height: 400px;
+        }
+        
+        /* ============================================
+           BOUTONS ACTION
+           ============================================ */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: var(--color-primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #365fa3;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .btn-secondary {
+            background: var(--color-secondary);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a8a38;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        /* ============================================
+           LÉGENDE
+           ============================================ */
+        .legend {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid var(--color-warning);
+        }
+        
+        .legend h4 {
+            color: var(--color-warning);
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+        
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .legend-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            border: 2px solid #ddd;
+        }
+        
+        /* ============================================
+           FOOTER
+           ============================================ */
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-light);
+            margin-top: 60px;
+        }
+        
+        footer p {
+            margin: 5px 0;
+        }
+        
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+            
+            header p {
+                font-size: 1rem;
+            }
+            
+            .schema-section {
+                padding: 20px;
+            }
+            
+            .toc-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* ============================================
+           PRINT STYLES
+           ============================================ */
+        @media print {
+            body {
+                background: white;
+            }
+            
+            .schema-section {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            
+            .action-buttons {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <header>
+            <h1>📊 Schémas Techniques Mermaid</h1>
+            <p>Sous-Programmes Accesseurs VSAM et DB2 — Formation COBOL Mainframe</p>
+        </header>
+        
+        <!-- TABLE DES MATIÈRES -->
+        <div class="toc">
+            <h2>📑 Navigation Rapide</h2>
+            <div class="toc-grid">
+                <a href="#schema1" class="toc-item">
+                    <span class="toc-number">1</span>
+                    <span class="toc-title">Architecture V1 — VSAM Pur</span>
+                </a>
+                <a href="#schema2" class="toc-item">
+                    <span class="toc-number">2</span>
+                    <span class="toc-title">Architecture V2 — Accesseur Dynamique</span>
+                </a>
+                <a href="#schema3" class="toc-item">
+                    <span class="toc-number">3</span>
+                    <span class="toc-title">Les Mappers — Abstraction</span>
+                </a>
+                <a href="#schema4" class="toc-item">
+                    <span class="toc-number">4</span>
+                    <span class="toc-title">PGMVSAM — Flowchart</span>
+                </a>
+                <a href="#schema5" class="toc-item">
+                    <span class="toc-number">5</span>
+                    <span class="toc-title">PGMDB2 — Flowchart</span>
+                </a>
+                <a href="#schema6" class="toc-item">
+                    <span class="toc-number">6</span>
+                    <span class="toc-title">Workflow JCL Global</span>
+                </a>
+                <a href="#schema7" class="toc-item">
+                    <span class="toc-number">7</span>
+                    <span class="toc-title">GitFlow — Branches</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- SCHÉMA 1 : ARCHITECTURE V1 -->
+        <div class="schema-section" id="schema1">
+            <div class="schema-header">
+                <span class="schema-number">Schéma 1</span>
+                <h2>Architecture V1 — VSAM Pur</h2>
+                <p class="schema-description">
+                    Version initiale du projet avec appel statique à PGMVSAM. Le programme principal MAJASSU 
+                    appelle l'accesseur VSAM de manière hardcodée. Tous les fichiers (assurés et mouvements) 
+                    sont gérés via VSAM uniquement.
+                </p>
+            </div>
+            <div class="schema-content">
+                <pre class="mermaid">
+graph TB
+    A[MAJASSU<br/>Programme principal] -->|"CALL statique<br/>'PGMVSAM'"| B[PGMVSAM<br/>Accesseur VSAM]
+    B -->|"OPEN/READ/WRITE<br/>REWRITE/DELETE"| C[(KSDS ASSURES3<br/>Indexé par matricule)]
+    B -->|"READ séquentiel"| D[(ESDS FMVTSE<br/>Mouvements C/M/S)]
+    A -->|"Anomalies"| E[GDG ETATANO<br/>3 générations]
+    A -->|"Statistiques"| F[SYSOUT]
+    
+    style A fill:#4472C4,color:#fff
+    style B fill:#70AD47,color:#fff
+    style C fill:#FFC000
+    style D fill:#FFC000
+    style E fill:#ED7D31
+    style F fill:#5B9BD5,color:#fff
+                </pre>
+            </div>
+            <div class="legend">
+                <h4>🎨 Légende des couleurs</h4>
+                <div class="legend-grid">
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #4472C4;"></span>
+                        <span>Programme principal</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #70AD47;"></span>
+                        <span>Accesseur VSAM</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #FFC000;"></span>
+                        <span>Fichiers VSAM</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #ED7D31;"></span>
+                        <span>GDG Anomalies</span>
+                    </div>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <a href="https://mermaid.live" target="_blank" class="btn btn-primary">
+                    🔧 Modifier dans Mermaid Live
+                </a>
+                <button class="btn btn-secondary" onclick="window.print()">
+                    🖨️ Imprimer
+                </button>
+            </div>
+        </div>
+        
+        <!-- SCHÉMA 2 : ARCHITECTURE V2 -->
+        <div class="schema-section" id="schema2">
+            <div class="schema-header">
+                <span class="schema-number">Schéma 2</span>
+                <h2>Architecture V2 — Accesseur Dynamique</h2>
+                <p class="schema-description">
+                    Version évoluée avec choix de l'accesseur à l'exécution via PARM JCL. MAJASSU V2 peut 
+                    appeler soit PGMVSAM (VSAM) soit PGMDB2 (DB2) sans recompilation. Le programme KSTODB2 
+                    assure la synchronisation entre le KSDS et la table DB2.
+                </p>
+            </div>
+            <div class="schema-content">
+                <pre class="mermaid">
+graph TB
+    A[MAJASSU V2<br/>Programme principal] -->|"Lit PARM JCL"| B{PARM = ?}
+    B -->|"'PGMVSAM'"| C[PGMVSAM<br/>Accesseur VSAM]
+    B -->|"'PGMDB2'"| D[PGMDB2<br/>Accesseur DB2]
+    C -->|"CRUD VSAM"| E[(KSDS ASSURES3)]
+    D -->|"CRUD SQL"| F[(Table DB2<br/>API12.ASSURES)]
+    G[KSTODB2<br/>Synchronisation] -->|"READ KSDS"| E
+    G -->|"TRUNCATE + INSERT"| F
+    A -->|"Anomalies"| H[GDG ETATANO]
+    
+    style A fill:#4472C4,color:#fff
+    style B fill:#E74C3C,color:#fff
+    style C fill:#70AD47,color:#fff
+    style D fill:#70AD47,color:#fff
+    style E fill:#FFC000
+    style F fill:#9966FF,color:#fff
+    style G fill:#34495E,color:#fff
+    style H fill:#ED7D31
+                </pre>
+            </div>
+            <div class="legend">
+                <h4>🎨 Légende des couleurs</h4>
+                <div class="legend-grid">
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #E74C3C;"></span>
+                        <span>Point de décision (PARM)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #70AD47;"></span>
+                        <span>Accesseurs (VSAM/DB2)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #9966FF;"></span>
+                        <span>Base de données DB2</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #34495E;"></span>
+                        <span>Programme sync</span>
+                    </div>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <a href="https://mermaid.live" target="_blank" class="btn btn-primary">
+                    🔧 Modifier dans Mermaid Live
+                </a>
+            </div>
+        </div>
+        
+        <!-- SCHÉMA 3 : MAPPERS -->
+        <div class="schema-section" id="schema3">
+            <div class="schema-header">
+                <span class="schema-number">Schéma 3</span>
+                <h2>Les Mappers — Cœur de l'Abstraction</h2>
+                <p class="schema-description">
+                    Le rôle crucial des mappers : traduire la complexité technique (File Status VSAM et SQLCODE DB2) 
+                    en 6 codes retour simples. PGMVSAM utilise un seul mapper universel, tandis que PGMDB2 nécessite 
+                    4 mappers contextuels car le même SQLCODE peut avoir des significations différentes selon l'opération.
+                </p>
+            </div>
+            <div class="schema-content">
+                <pre class="mermaid">
+graph TB
+    subgraph VSAM["PGMVSAM - 1 Mapper Unique"]
+        V1[File Status VSAM] --> V2{MAPPER-FILE-STATUS}
+        V2 -->|"'00'"| V3["00 OK"]
+        V2 -->|"'10'"| V4["04 EOF"]
+        V2 -->|"'22'"| V5["02 DUPLICATE"]
+        V2 -->|"'23'"| V6["01 NOTFOUND"]
+        V2 -->|"'9x', '35'"| V7["03 IOERROR"]
+        V2 -->|"autres"| V8["99 ERROR"]
+    end
+    
+    subgraph DB2["PGMDB2 - 4 Mappers Contextuels"]
+        D1[SQLCODE DB2] --> D2{Quelle fonction?}
+        D2 -->|"f03, f05<br/>READ/DELETE"| D3[MAPPER-READ]
+        D2 -->|"f04, f06, f09<br/>UPDATE/INSERT/TRUNCATE"| D4[MAPPER-WRITE]
+        D2 -->|"f08<br/>FETCH"| D5[MAPPER-FETCH]
+        D2 -->|"f07<br/>OPEN CURSOR"| D6[MAPPER-OPEN]
+        
+        D3 -->|"0 → 00<br/>+100 → 01<br/>-501 → 03"| D7[Codes retour]
+        D4 -->|"0 → 00<br/>-803/-811 → 02<br/>-501 → 03"| D7
+        D5 -->|"0 → 00<br/>+100 → 04<br/>-501 → 03"| D7
+        D6 -->|"0 → 00<br/>autres → 99"| D7
+    end
+    
+    V3 --> RET[LS-CODE-RETOUR]
+    V4 --> RET
+    V5 --> RET
+    V6 --> RET
+    V7 --> RET
+    V8 --> RET
+    D7 --> RET
+    
+    style V2 fill:#F39C12
+    style D2 fill:#E74C3C,color:#fff
+    style RET fill:#27AE60,color:#fff
+                </pre>
+            </div>
+            <div class="legend">
+                <h4>🎨 Légende des couleurs</h4>
+                <div class="legend-grid">
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #F39C12;"></span>
+                        <span>Mapper VSAM</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #E74C3C;"></span>
+                        <span>Switch fonctions DB2</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #27AE60;"></span>
+                        <span>Code retour final</span>
+                    </div>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <a href="https://mermaid.live" target="_blank" class="btn btn-primary">
+                    🔧 Modifier dans Mermaid Live
+                </a>
+            </div>
+        </div>
+        
+        <!-- SCHÉMA 4 : PGMVSAM -->
+        <div class="schema-section" id="schema4">
+            <div class="schema-header">
+                <span class="schema-number">Schéma 4</span>
+                <h2>PGMVSAM — Flowchart Complet</h2>
+                <p class="schema-description">
+                    Flux détaillé du sous-programme PGMVSAM. Le programme reçoit la zone de communication 120 octets, 
+                    analyse le code fonction (01-08), dirige vers le paragraphe approprié, exécute l'opération VSAM 
+                    correspondante, puis traduit le File Status en code retour via le mapper unique.
+                </p>
+            </div>
+            <div class="schema-content">
+                <pre class="mermaid">
+graph TB
+    START([PGMVSAM]) --> INPUT["Reçoit LS-COM<br/>(120 octets)"]
+    INPUT --> FUNC{Code Fonction?}
+    
+    FUNC -->|"01"| F01[FUNC-OPEN]
+    FUNC -->|"02"| F02[FUNC-CLOSE]
+    FUNC -->|"03"| F03[FUNC-READ]
+    FUNC -->|"04"| F04[FUNC-REWRITE]
+    FUNC -->|"05"| F05[FUNC-DELETE]
+    FUNC -->|"06"| F06[FUNC-WRITE]
+    FUNC -->|"07"| F07[FUNC-START]
+    FUNC -->|"08"| F08[FUNC-READNEXT]
+    FUNC -->|"autre"| F99[99 ERROR]
+    
+    F01 --> FILE1{Fichier?}
+    F02 --> FILE2{Fichier?}
+    F03 --> FILE3{Fichier?}
+    F04 --> FILE4{Fichier?}
+    F05 --> FILE5{Fichier?}
+    F06 --> FILE6{Fichier?}
+    F07 --> FILE7{Fichier?}
+    F08 --> FILE8{Fichier?}
+    
+    FILE1 -->|"ASSURES3"| KSDS1["OPEN I-O F-ASSURES"]
+    FILE1 -->|"FMVTSE"| ESDS1["OPEN INPUT F-MVTS"]
+    FILE2 -->|"ASSURES3"| KSDS2["CLOSE F-ASSURES"]
+    FILE2 -->|"FMVTSE"| ESDS2["CLOSE F-MVTS"]
+    FILE3 -->|"ASSURES3"| KSDS3["READ F-ASSURES"]
+    FILE4 -->|"ASSURES3"| KSDS4["REWRITE FS-ASSURES-REC"]
+    FILE5 -->|"ASSURES3"| KSDS5["DELETE F-ASSURES"]
+    FILE6 -->|"ASSURES3"| KSDS6["WRITE FS-ASSURES-REC"]
+    FILE7 -->|"ASSURES3"| KSDS7["START F-ASSURES"]
+    FILE8 -->|"ASSURES3"| KSDS8["READ F-ASSURES NEXT"]
+    FILE8 -->|"FMVTSE"| ESDS8["READ F-MVTS"]
+    
+    KSDS1 --> MAP
+    KSDS2 --> MAP
+    KSDS3 --> MAP
+    KSDS4 --> MAP
+    KSDS5 --> MAP
+    KSDS6 --> MAP
+    KSDS7 --> MAP
+    KSDS8 --> MAP
+    ESDS1 --> MAP
+    ESDS2 --> MAP
+    ESDS8 --> MAP
+    
+    MAP[MAPPER-FILE-STATUS] --> RET["Positionne<br/>LS-CODE-RETOUR"]
+    F99 --> RET
+    RET --> END([GOBACK])
+    
+    style FUNC fill:#E74C3C,color:#fff
+    style MAP fill:#F39C12
+    style RET fill:#27AE60,color:#fff
+    style START fill:#3498DB,color:#fff
+    style END fill:#3498DB,color:#fff
+                </pre>
+            </div>
+            <div class="action-buttons">
+                <a href="https://mermaid.live" target="_blank" class="btn btn-primary">
+                    🔧 Modifier dans Mermaid Live
+                </a>
+            </div>
+        </div>
+        
+        <!-- SCHÉMA 5 : PGMDB2 -->
+        <div class="schema-section" id="schema5">
+            <div class="schema-header">
+                <span class="schema-number">Schéma 5</span>
+                <h2>PGMDB2 — Flowchart Complet</h2>
+                <p class="schema-description">
+                    Flux détaillé du sous-programme PGMDB2. Le programme reçoit la zone de communication, sauvegarde 
+                    le SQLCODE, analyse le code fonction (01-09), effectue les conversions de types DISPLAY ↔ COMP-3/COMP 
+                    nécessaires, exécute la requête SQL, puis traduit le SQLCODE via le mapper approprié.
+                </p>
+            </div>
+            <div class="schema-content">
+                <pre class="mermaid">
+graph TB
+    START([PGMDB2]) --> INPUT["Reçoit LS-COM<br/>(120 octets)"]
+    INPUT --> SQLCA["MOVE SQLCODE<br/>TO WS-SQLCODE"]
+    SQLCA --> FUNC{Code Fonction?}
+    
+    FUNC -->|"01"| F01["FUNC-OPEN<br/>(no-op)"]
+    FUNC -->|"02"| F02["FUNC-CLOSE<br/>CLOSE CSR-ASSURES"]
+    FUNC -->|"03"| F03["FUNC-READ<br/>SELECT WHERE"]
+    FUNC -->|"04"| F04["FUNC-REWRITE<br/>UPDATE WHERE"]
+    FUNC -->|"05"| F05["FUNC-DELETE<br/>DELETE WHERE"]
+    FUNC -->|"06"| F06["FUNC-WRITE<br/>INSERT INTO"]
+    FUNC -->|"07"| F07["FUNC-START<br/>OPEN CSR-ASSURES"]
+    FUNC -->|"08"| F08["FUNC-READNEXT<br/>FETCH CSR-ASSURES"]
+    FUNC -->|"09"| F09["FUNC-TRUNCATE<br/>DELETE FROM (no WHERE)"]
+    FUNC -->|"autre"| F99[99 ERROR]
+    
+    F01 --> MAP1[MAPPER-OPEN]
+    F02 --> MAP1
+    F03 --> CONV1["MOVE-LS-TO-WS<br/>(DISPLAY → COMP)"]
+    CONV1 --> SQL3["EXEC SQL<br/>SELECT"]
+    SQL3 --> MAP2[MAPPER-READ]
+    MAP2 --> CONV2["MOVE-WS-TO-LS<br/>(COMP → DISPLAY)"]
+    
+    F04 --> CONV3["MOVE-LS-TO-WS"]
+    CONV3 --> SQL4["EXEC SQL<br/>UPDATE"]
+    SQL4 --> MAP3[MAPPER-WRITE]
+    
+    F05 --> CONV4["MOVE-LS-TO-WS"]
+    CONV4 --> SQL5["EXEC SQL<br/>DELETE"]
+    SQL5 --> MAP2
+    
+    F06 --> CONV5["MOVE-LS-TO-WS"]
+    CONV5 --> SQL6["EXEC SQL<br/>INSERT"]
+    SQL6 --> MAP3
+    
+    F07 --> SQL7["EXEC SQL<br/>OPEN CSR-ASSURES"]
+    SQL7 --> MAP1
+    
+    F08 --> SQL8["EXEC SQL<br/>FETCH CSR-ASSURES"]
+    SQL8 --> MAP4[MAPPER-FETCH]
+    MAP4 --> CONV6["MOVE-WS-TO-LS"]
+    
+    F09 --> SQL9["EXEC SQL<br/>DELETE FROM ASSURES"]
+    SQL9 --> MAP3
+    
+    CONV2 --> RET
+    CONV6 --> RET
+    MAP1 --> RET
+    MAP3 --> RET
+    F99 --> RET
+    
+    RET["Positionne<br/>LS-CODE-RETOUR"] --> END([GOBACK])
+    
+    style FUNC fill:#E74C3C,color:#fff
+    style MAP1 fill:#9B59B6,color:#fff
+    style MAP2 fill:#9B59B6,color:#fff
+    style MAP3 fill:#9B59B6,color:#fff
+    style MAP4 fill:#9B59B6,color:#fff
+    style RET fill:#27AE60,color:#fff
+    style START fill:#3498DB,color:#fff
+    style END fill:#3498DB,color:#fff
+                </pre>
+            </div>
+            <div class="legend">
+                <h4>🎨 Légende des couleurs</h4>
+                <div class="legend-grid">
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #9B59B6;"></span>
+                        <span>Mappers DB2</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #27AE60;"></span>
+                        <span>Code retour final</span>
+                    </div>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <a href="https://mermaid.live" target="_blank" class="btn btn-primary">
+                    🔧 Modifier dans Mermaid Live
+                </a>
+            </div>
+        </div>
+        
+        <!-- SCHÉMA 6 : WORKFLOW JCL -->
+        <div class="schema-section" id="schema6">
+            <div class="schema-header">
+                <span class="schema-number">Schéma 6</span>
+                <h2>Workflow JCL Global</h2>
+                <p class="schema-description">
+                    Vue d'ensemble du workflow opérationnel complet. Phase 1 : Initialisation unique (GDG, VSAM, DB2). 
+                    Phase 2 : Exécution courante avec choix V1 ou V2. Phase 3 : Resynchronisation DB2 si nécessaire.
+                </p>
+            </div>
+            <div class="schema-content">
+                <pre class="mermaid">
+graph TB
+    subgraph PHASE1["PHASE 1 - INITIALISATION (Une seule fois)"]
+        A[JCREGDG] -->|"Création GDG"| B[JCREVSAM]
+        B -->|"Définition + Chargement<br/>KSDS + ESDS"| C[SPUFI]
+        C -->|"CREATE TABLE<br/>API12.ASSURES"| D[DCLGEN]
+        D -->|"Génération<br/>DCLASSU.cpy"| E[JCOMPDB2]
+        E -->|"Précompilation DB2<br/>Compilation<br/>BIND"| F[JKSDB2]
+        F -->|"Chargement initial<br/>KSDS → DB2"| INIT_END[Initialisation terminée]
+    end
+    
+    subgraph PHASE2["PHASE 2 - EXÉCUTION COURANTE"]
+        G{Version?} -->|"V1"| H[JMAJMVT]
+        G -->|"V2"| I{Accesseur?}
+        I -->|"PARM='PGMVSAM'"| J[JMAJMV2<br/>avec PGMVSAM]
+        I -->|"PARM='PGMDB2'"| K[JMAJDB2<br/>avec PGMDB2]
+        
+        H --> RUN_END[Exécution terminée]
+        J --> RUN_END
+        K --> RUN_END
+    end
+    
+    subgraph PHASE3["PHASE 3 - RESYNCHRONISATION (Si besoin)"]
+        L[JKSDB2] -->|"TRUNCATE DB2<br/>+ INSERT depuis KSDS"| SYNC_END[Resynchronisation terminée]
+    end
+    
+    INIT_END -.->|"Première fois"| G
+    RUN_END -.->|"Nouveau lot"| G
+    RUN_END -.->|"Si corruption DB2"| L
+    
+    style A fill:#3498DB,color:#fff
+    style E fill:#E74C3C,color:#fff
+    style F fill:#9B59B6,color:#fff
+    style H fill:#70AD47,color:#fff
+    style J fill:#70AD47,color:#fff
+    style K fill:#9B59B6,color:#fff
+    style L fill:#9B59B6,color:#fff
+                </pre>
+            </div>
+            <div class="legend">
+                <h4>🎨 Légende des couleurs</h4>
+                <div class="legend-grid">
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #3498DB;"></span>
+                        <span>JCL création</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #E74C3C;"></span>
+                        <span>JCL compilation DB2</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #70AD47;"></span>
+                        <span>JCL exécution VSAM</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #9B59B6;"></span>
+                        <span>JCL DB2</span>
+                    </div>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <a href="https://mermaid.live" target="_blank" class="btn btn-primary">
+                    🔧 Modifier dans Mermaid Live
+                </a>
+            </div>
+        </div>
+        
+        <!-- SCHÉMA 7 : GITFLOW -->
+        <div class="schema-section" id="schema7">
+            <div class="schema-header">
+                <span class="schema-number">Schéma 7</span>
+                <h2>GitFlow — Stratégie de Branches</h2>
+                <p class="schema-description">
+                    Workflow Git du projet avec nomenclature Angular. Branche main (production), test (validation CI/CD), 
+                    gnucobol (portabilité), et feature branches pour le développement. Les commits suivent la convention 
+                    feat/fix/docs/refactor/test/chore.
+                </p>
+            </div>
+            <div class="schema-content">
+                <pre class="mermaid">
+%%{init: { 'theme': 'base', 'gitGraph': {'showBranches': true, 'showCommitLabel':true}}}%%
+gitGraph
+    commit id: "Initial commit"
+    commit id: "feat: V1 PGMVSAM"
+    commit id: "feat: V1 MAJASSU"
+    
+    branch test
+    checkout test
+    commit id: "feat: add tests"
+    
+    checkout main
+    merge test tag: "v1.0"
+    
+    branch gnucobol
+    checkout gnucobol
+    commit id: "feat: GnuCOBOL compat"
+    commit id: "fix: Windows paths"
+    
+    checkout main
+    commit id: "feat: V2 PGMDB2"
+    
+    branch feat-db2
+    checkout feat-db2
+    commit id: "docs: DB2.md"
+    commit id: "feat: KSTODB2"
+    
+    checkout test
+    merge feat-db2
+    commit id: "test: CI syntax check"
+    
+    checkout main
+    merge test tag: "v2.0"
+    
+    checkout test
+    commit id: "refactor: code cleanup"
+    
+    checkout main
+    commit id: "chore: workflows"
+    commit id: "docs: RECAPV2.md" tag: "2026-02-24"
+                </pre>
+            </div>
+            <div class="legend">
+                <h4>🎨 Nomenclature Angular</h4>
+                <div class="legend-grid">
+                    <div class="legend-item">
+                        <strong>feat:</strong> Nouvelle fonctionnalité
+                    </div>
+                    <div class="legend-item">
+                        <strong>fix:</strong> Correction de bug
+                    </div>
+                    <div class="legend-item">
+                        <strong>docs:</strong> Documentation
+                    </div>
+                    <div class="legend-item">
+                        <strong>refactor:</strong> Restructuration code
+                    </div>
+                    <div class="legend-item">
+                        <strong>test:</strong> Tests
+                    </div>
+                    <div class="legend-item">
+                        <strong>chore:</strong> Maintenance
+                    </div>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <a href="https://mermaid.live" target="_blank" class="btn btn-primary">
+                    🔧 Modifier dans Mermaid Live
+                </a>
+            </div>
+        </div>
+        
+        <!-- FOOTER -->
+        <footer>
+            <p><strong>Nicolas Moreau</strong> — Formation COBOL Mainframe</p>
+            <p>AJC Formation — Formateur : Marc Bensoussan</p>
+            <p>Février 2025</p>
+            <p style="margin-top: 20px; font-size: 0.9rem;">
+                <a href="https://github.com/Nicolas2Moreau/cobol-vsam-assures" target="_blank" style="color: var(--color-primary);">
+                    📦 Repository GitHub
+                </a>
+            </p>
+        </footer>
+    </div>
+    
+    <script>
+        // Smooth scroll pour la navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
